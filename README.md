@@ -28,6 +28,22 @@ Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego 
 
 Un sol (día marciano) dura 10 minutos de juego a velocidad ×1.
 
+## Ubicación de la base: Arcadia Planitia
+
+La base está en el sector centro-oriental de **Arcadia Planitia**, en **40,0° N · 190,0° E** (170,0° O): una llanura baja del hemisferio norte con hielo de agua a poca profundidad. El sitio de impacto con hielo confirmado más cercano (Dundas et al., 2014) está a unos 54 km, en 39,1° N · 190,2° E.
+
+El **Mapa de Arcadia** (menú de inicio, tecla `M` o `L3` en el control) muestra mapas reales de [NASA Mars Trek](https://trek.nasa.gov/mars/) sin bibliotecas externas:
+
+| Capa | Fuente | Para qué sirve |
+|---|---|---|
+| Color | Viking MDIM 2.1 (232 m/px) | Ver el terreno como desde órbita |
+| Relieve | MOLA + HRSC (200 m/px) | Entender alturas: Arcadia es baja |
+| Infrarrojo | THEMIS día (100 m/px) | Distinguir roca de polvo |
+| Geología | USGS SIM 3292 | Tipos y edades de terreno |
+| Inercia térmica | MGS TES | Roca, suelo compacto o hielo vs. polvo suelto |
+
+Encima se dibujan la base, los **sitios de impacto con hielo expuesto** y los **cráteres nuevos** de la zona (consultados en vivo al servicio ArcGIS de Mars Trek, con una lista guardada de respaldo) y los destinos del Modo Expedición. Necesita internet: los mapas no cargan dentro del artifact de Claude, sí en GitHub Pages o abriendo el archivo.
+
 ## Interfaz
 
 - **Barra superior:** 8 indicadores circulares en vivo (Agua, Oxígeno, Alimentos, Energía, Protección, Cordura, Salud, Gastos) y, a la derecha, reloj, clima, velocidad del tiempo y Objetivos.
