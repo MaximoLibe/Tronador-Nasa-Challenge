@@ -6,33 +6,53 @@ El jugador construye una base con cúpulas **semiesféricas** y **semicilíndric
 
 ## Cómo jugar
 
-Abrí `index.html` en el navegador (no hace falta instalar nada). También funciona desde GitHub Pages. Arranca en el **menú de inicio** (Jugar, Modo Expedición, Aprende, Opciones, Salir); el juego se construye recién al elegir **Jugar**.
+Abrí `index.html` en el navegador (no hace falta instalar nada; las imágenes van dentro del archivo). También funciona desde GitHub Pages. Necesita internet para el motor 3D y los mapas de NASA Mars Trek.
 
-Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego lo detecta solo al apretar cualquier botón, sin configurar nada. Con el control aparece una mira en el centro de la pantalla para apuntar.
+El menú sigue el diagrama `Estructura de juego.drawio`:
+
+- **Jugar**
+  - **Supervivencia:** elegís **Cadete** o **Comandante** (cambian los recursos iniciales, la frecuencia de climas extremos y los castigos) y tu astronauta. Al tocar **Iniciar misión** hay un descenso orbital sobre Arcadia Planitia con la cartografía real de Mars Trek, inspirado en la carga de mapas de Star Wars Battlefront, y un timelapse de 10 segundos en el que se arma la base.
+  - **Explorar:** abre `expedicion.html`. Al elegir un lugar (Cráter Jezero, Monte Sharp o Valles Marineris) y tocar **Iniciar exploración** se reproduce el mismo descenso orbital y después el aterrizaje del rover. En cada lugar hay una **pelota de fútbol medio enterrada** para encontrar.
+- **Cargar partida:** 3 ranuras guardadas en el navegador.
+- **Opciones:** idioma (español, inglés, italiano), controles (se pueden reasignar teclas y botones del control), sonido (música y efectos) y gráficos (calidad y sensibilidad de cámara). Es el mismo panel que se abre desde la pausa.
+- **Créditos** y **Salir del juego**.
+
+Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego lo detecta solo al apretar cualquier botón. Con el control aparece una mira en el centro de la pantalla para apuntar. Teclas y botones por defecto:
 
 | Acción | Teclado y mouse | Control Xbox 360 |
 |---|---|---|
 | Mover la cámara | `W` `A` `S` `D` o flechas, o arrastrar | Stick izquierdo |
-| Girar / inclinar la cámara | `Q` `E`, o clic derecho + arrastrar | Stick derecho |
+| Girar / inclinar la cámara | `Q` `R`, o clic derecho + arrastrar | Stick derecho |
 | Zoom | Rueda del mouse o `Z` `X` | `RT` acercar · `LT` alejar |
 | Construir / seleccionar | Clic izquierdo | `A` |
 | Cancelar / volver | `Esc` o clic derecho | `B` |
-| Rotar la pieza | `R` | `X` |
-| Modo desarmar | `0` | `Y` |
-| Categorías del dock | `1` a `8` · `9` radar | `LB` `RB` |
-| Elegir construcción | Clic en la tarjeta | Cruceta ← → |
-| Semiesfera / semicilindro | Botones de la bandeja | Cruceta ↑ ↓ |
-| Radar de hielo | `9` | `R3` (apretar el stick derecho) |
-| Mostrar la misión | `O` | `Back` |
-| Pausa | `Espacio` | `Start` |
+| Rotar el objeto | `E` | `X` |
+| Modo construcción (casco) | `B` | `R3` |
+| Bienestar del astronauta (corazón) | `H` | Cruceta ← |
+| Categorías de construcción | `1` a `8` | `LB` `RB` |
+| Recorrer el panel derecho | Clic | Cruceta ↑ ↓ |
+| Radar de hielo · Desarmar | `9` · `0` | Cruceta → · `Y` |
+| Mostrar la misión · Mapa de Arcadia | `O` · `M` | `Back` · `L3` |
+| Menú de pausa | `P` | `Start` |
 
 Un sol (día marciano) dura 10 minutos de juego a velocidad ×1.
+
+## Interfaz y mecánicas
+
+- **Arriba a la izquierda:** 9 indicadores circulares en vivo: Agua, Oxígeno, Alimentos, Energía, Protección, Cordura, Salud, Gastos y **Bienestar del astronauta**.
+- **Arriba a la derecha:** sol y hora, temperatura, clima, velocidad del tiempo y Objetivos.
+- **Abajo a la izquierda:** el **corazón** abre el bienestar y el **casco** activa el **modo construcción** (barra de categorías, letrero naranja y cuadrícula negra). Cada categoría se despliega en un panel vertical en la pared derecha, en una sola columna, con Semiesfera 2×2 y Semicilindro 3×2 como opciones propias.
+- **Bienestar:** 5 pilares (ejercicio con ARED, T2 y CEVIS; nutrición e hidratación; monitoreo médico y del SANS; sueño y ritmo circadiano; apoyo psicológico). Cada uno necesita instalaciones y gasta recursos; si se descuidan bajan la salud y la cordura.
+- **Clima:** Templado, Ventisca (paneles al 20 %, más calefacción, nadie sale) y Tornado (puede dañar estructuras exteriores si no se activan los anclajes; después deja los paneles limpios).
+- **Misiones:** el perro astronauta aparece con cada misión con el formato «(Categoría) Objetivo / Descripción / Recompensa».
+- **Construcciones:** al seleccionarlas se dibuja un contorno del color de su sector. Al acercar la cámara las cúpulas se vuelven transparentes y muestran su interior; la granja hidropónica es un sistema acuapónico con pecera, peces, bombas y bandejas escalonadas de cultivo.
+- **Pausa (`P`):** desenfoca el fondo; Continuar, Guardar partida (3 ranuras), Opciones y Salir con confirmación.
 
 ## Ubicación de la base: Arcadia Planitia
 
 La base está en el sector centro-oriental de **Arcadia Planitia**, en **40,0° N · 190,0° E** (170,0° O): una llanura baja del hemisferio norte con hielo de agua a poca profundidad. El sitio de impacto con hielo confirmado más cercano (Dundas et al., 2014) está a unos 54 km, en 39,1° N · 190,2° E.
 
-El **Mapa de Arcadia** (menú de inicio, tecla `M` o `L3` en el control) muestra mapas reales de [NASA Mars Trek](https://trek.nasa.gov/mars/) sin bibliotecas externas:
+El **Mapa de Arcadia** (tecla `M` o `L3` en el control) muestra mapas reales de [NASA Mars Trek](https://trek.nasa.gov/mars/) sin bibliotecas externas:
 
 | Capa | Fuente | Para qué sirve |
 |---|---|---|
@@ -43,12 +63,6 @@ El **Mapa de Arcadia** (menú de inicio, tecla `M` o `L3` en el control) muestra
 | Inercia térmica | MGS TES | Roca, suelo compacto o hielo vs. polvo suelto |
 
 Encima se dibujan la base, los **sitios de impacto con hielo expuesto** y los **cráteres nuevos** de la zona (consultados en vivo al servicio ArcGIS de Mars Trek, con una lista guardada de respaldo) y los destinos del Modo Expedición. Necesita internet: los mapas no cargan dentro del artifact de Claude, sí en GitHub Pages o abriendo el archivo.
-
-## Interfaz
-
-- **Barra superior:** 8 indicadores circulares en vivo (Agua, Oxígeno, Alimentos, Energía, Protección, Cordura, Salud, Gastos) y, a la derecha, reloj, clima, velocidad del tiempo y Objetivos.
-- **Dock inferior:** Hábitat, Energía, Oxígeno, Agua, Alimentos, Salud, Protección y Comunicaciones; separados, Radar y Desarmar.
-- **Misiones:** un perro astronauta aparece arriba a la derecha con cada misión nueva y se va al cumplirla o al cerrarlo.
 
 ## Mecánicas
 

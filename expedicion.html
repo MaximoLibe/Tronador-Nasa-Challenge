@@ -1,8 +1,5 @@
 <title>Expedición Rover Marte</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
 <style>
 /* Layout: pantalla completa 3D; paneles de control de misión flotando sobre la escena. Un solo look oscuro, deliberado. */
 :root{
@@ -17,15 +14,15 @@
   --dust:#dc9562;
   --ok:#a8e08f;
   --warn:#ffcd6b;
-  --f-display:'Saira Condensed','Arial Narrow',sans-serif;
-  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --f-display:'Helvetica','Arial',sans-serif;
+  --f-body:'Helvetica','Arial',sans-serif;
+  --f-mono:'Helvetica','Arial',sans-serif;
   --gutter-l:max(16px, env(safe-area-inset-left, 0px));
   --gutter-r:max(16px, env(safe-area-inset-right, 0px));
 }
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:14px;overflow:hidden;-webkit-font-smoothing:antialiased}
+body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-weight:700;font-size:14px;overflow:hidden;-webkit-font-smoothing:antialiased}
 #stage{position:fixed;inset:0}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 button{font:inherit;color:inherit}
@@ -178,6 +175,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0
 }
 @media (pointer:coarse){ .touch{display:flex} #help{display:none} }
 @media (prefers-reduced-motion:reduce){ #loading .bar i{animation:none;width:100%} }
+*{font-weight:700}
 </style>
 
 <div id="stage"></div>
@@ -191,10 +189,6 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0
     </div>
     <p class="lede">Elegí un destino en el globo o en la lista. Cada lugar es una zona de exploración de 600 × 600 m con objetivos para analizar con los instrumentos del rover.</p>
     <ul class="sites" id="site-list"></ul>
-    <div>
-      <p class="eyebrow" style="margin-bottom:6px">Próximos destinos</p>
-      <div class="soon" id="soon-list"></div>
-    </div>
     <div id="detail">
       <p class="eyebrow">Destino seleccionado</p>
       <h2 id="d-name"></h2>
@@ -204,7 +198,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0
         <dt>Tamaño real</dt><dd id="d-size"></dd>
         <dt>Exploración</dt><dd id="d-rover"></dd>
       </dl>
-      <button class="primary" id="btn-deploy">Desplegar rover</button>
+      <button class="primary" id="btn-deploy">Iniciar exploración</button>
     </div>
     <p class="note">Rover de 6 ruedas con suspensión rocker-bogie, como Perseverance, con el helicóptero Ingenuity guardado bajo la panza: desplegalo para ver cada zona desde el aire. El terreno se genera por código inspirado en cada lugar: no es el relieve real.</p>
   </div>
@@ -295,6 +289,145 @@ h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0
   <div class="bar"><i></i></div>
 </div>
 
+<script>
+/* =====================================================================
+   DESCENSO ORBITAL — animación de entrada inspirada en la pantalla de carga
+   y selección de mapa de Star Wars Battlefront (2004), con la cartografía
+   real de NASA Mars Trek (https://trek.nasa.gov/mars/).
+   1) El globo de Marte gira hasta mostrar el lugar elegido y se acerca.
+   2) La vista pasa al mapa plano y hace zoom sobre las coordenadas, con
+      grilla de latitud/longitud, retícula, barrido y telemetría.
+   3) Aparece el nombre del lugar abajo a la derecha y se funde a negro.
+   Uso: Descenso.reproducir({lat,lon,nombre,sub,textos,alFinal})
+   Se usa en index.html (Supervivencia) y en expedicion.html (Explorar).
+   ===================================================================== */
+const Descenso=(function(){
+const TILE='https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg';
+const FUENTE="700 {s}px 'Helvetica','Arial',sans-serif";
+const fuente=s=>FUENTE.replace('{s}',s);
+// ---- Mosaicos de Mars Trek (equirectangular: nivel z = 2^(z+1) × 2^z mosaicos de 256 px) ----
+const cache=new Map();
+function tile(z,y,x){const k=z+'/'+y+'/'+x;let im=cache.get(k);if(!im){im=new Image();im.crossOrigin='anonymous';im.onerror=()=>{im.fallo=true};im.src=TILE.replace('{z}',z).replace('{y}',y).replace('{x}',x);cache.set(k,im)}return im.complete&&!im.fallo&&im.naturalWidth?im:null}
+// Textura global para el globo: nivel 2 (8 × 4 mosaicos) armada en un lienzo de 1024 × 512
+const tex=document.createElement('canvas');tex.width=1024;tex.height=512;const tctx=tex.getContext('2d',{willReadFrequently:true});
+let texDatos=null,texListos=0,texPedida=false;
+function pedirTextura(){
+  if(texPedida)return;texPedida=true;
+  const g=tctx.createLinearGradient(0,0,0,512);g.addColorStop(0,'#c98b63');g.addColorStop(.5,'#a85a35');g.addColorStop(1,'#cfa58a');tctx.fillStyle=g;tctx.fillRect(0,0,1024,512);
+  for(let y=0;y<4;y++)for(let x=0;x<8;x++){const im=new Image();im.crossOrigin='anonymous';
+    im.onload=()=>{tctx.drawImage(im,x*128,y*128,128,128);texListos++;try{texDatos=tctx.getImageData(0,0,1024,512).data}catch(_){texDatos=null}};
+    im.src=TILE.replace('{z}',2).replace('{y}',y).replace('{x}',x)}
+  try{texDatos=tctx.getImageData(0,0,1024,512).data}catch(_){}
+}
+// ---- Capa visual ----
+let raiz,cv,ctx,eEstado,eTele,eRotulo,eBarra,ePaso,activo=null;
+function crearCapa(){
+  if(raiz)return;
+  raiz=document.createElement('div');
+  raiz.style.cssText="position:fixed;inset:0;z-index:80;background:#000;overflow:hidden;font-family:'Helvetica','Arial',sans-serif;font-weight:700;color:#cfe8ff;opacity:1;transition:opacity .6s";
+  raiz.innerHTML=`<canvas style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+   <div style="position:absolute;left:24px;top:20px;font-size:12px;letter-spacing:2px;text-transform:uppercase;line-height:1.7;text-shadow:0 1px 3px #000"><span data-d="canal"></span><b data-d="estado" style="display:block;font-size:15px;color:#fff"></b><span data-d="paso" style="color:#ffb066"></span></div>
+   <div data-d="tele" style="position:absolute;right:24px;top:20px;text-align:right;font-size:12px;letter-spacing:1.5px;line-height:1.7;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000"></div>
+   <div data-d="rotulo" style="position:absolute;right:max(32px,env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));text-align:right;opacity:0;transform:translateY(10px);transition:opacity .8s,transform .8s"><b data-d="nombre" style="display:block;font-size:clamp(30px,5vw,58px);letter-spacing:6px;color:#fff;line-height:1;text-shadow:0 2px 12px #000"></b><small data-d="sub" style="display:block;margin-top:8px;font-size:13px;letter-spacing:3px;color:#ffb066"></small></div>
+   <button data-d="saltar" style="position:absolute;left:24px;bottom:calc(24px + env(safe-area-inset-bottom,0px));background:rgba(14,33,66,.85);border:1px solid #21426f;border-radius:6px;padding:7px 12px;color:#dce9ff;font:inherit;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer"></button>
+   <div style="position:absolute;left:24px;right:24px;bottom:calc(10px + env(safe-area-inset-bottom,0px));height:3px;background:rgba(255,255,255,.15)"><i data-d="barra" style="display:block;height:100%;width:0;background:#ffb066"></i></div>`;
+  document.body.appendChild(raiz);
+  const q=s=>raiz.querySelector('[data-d='+s+']');
+  cv=raiz.querySelector('canvas');ctx=cv.getContext('2d');eEstado=q('estado');eTele=q('tele');eRotulo=q('rotulo');eBarra=q('barra');ePaso=q('paso');
+  q('saltar').onclick=()=>terminar();
+  addEventListener('keydown',e=>{if(activo&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')){e.preventDefault();e.stopImmediatePropagation();terminar()}},true);
+}
+const DUR=8.6,T_GLOBO=3.6;
+const suave=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+const fmtG=(v,ns)=>Math.abs(v).toFixed(2).replace('.',',')+'° '+(v>=0?ns[0]:ns[1]);
+function reproducir(o){
+  crearCapa();pedirTextura();
+  const tx=Object.assign({canal:'Enlace orbital · NASA Mars Trek',adquiriendo:'Adquiriendo señal…',aproximacion:'Aproximación orbital',sector:'Sector de destino',listo:'Zona de aterrizaje confirmada',altitud:'Altitud',saltar:'Saltar'},o.textos||{});
+  activo={o,tx,t0:performance.now(),fin:false};
+  raiz.querySelector('[data-d=canal]').textContent=tx.canal;raiz.querySelector('[data-d=saltar]').textContent=tx.saltar;
+  raiz.querySelector('[data-d=nombre]').textContent=o.nombre;raiz.querySelector('[data-d=sub]').textContent=o.sub||'';
+  eRotulo.style.opacity=0;eRotulo.style.transform='translateY(10px)';raiz.style.display='block';raiz.style.opacity=1;
+  // precargar los mosaicos del zoom final
+  for(let z=3;z<=8;z++){const W=2**(z+1),H=2**z,c=Math.floor((o.lon+180)/360*W),r=Math.floor((90-o.lat)/180*H);for(let dy=-1;dy<=1;dy++)for(let dx=-2;dx<=2;dx++)tile(z,Math.max(0,Math.min(H-1,r+dy)),((c+dx)%W+W)%W)}
+  if(window.Sonido)Sonido.efecto('descenso');
+  requestAnimationFrame(cuadro);
+}
+function terminar(){
+  if(!activo||activo.fin)return;activo.fin=true;const cb=activo.o.alFinal;
+  raiz.style.opacity=0;setTimeout(()=>{raiz.style.display='none';activo=null;cb&&cb()},600);
+}
+// Globo: proyección ortográfica de la textura equirectangular, muestreada píxel por píxel
+let img=null;const RES=360;
+function dibujarGlobo(w,h,tt,o){
+  const k=suave(tt/T_GLOBO),rot=-o.lon*Math.PI/180+(1-k)*2.6,inc=o.lat*Math.PI/180*k;
+  const R=Math.min(w,h)*(.32+1.1*k*k);
+  if(!img)img=ctx.createImageData(RES,RES);const d=img.data,cr=Math.cos(inc),sr=Math.sin(inc);
+  for(let py=0;py<RES;py++)for(let px=0;px<RES;px++){
+    const i=(py*RES+px)*4,nx=(px/RES-.5)*2,ny=-(py/RES-.5)*2,r2=nx*nx+ny*ny;
+    if(r2>1){d[i+3]=0;continue}
+    const nz=Math.sqrt(1-r2);
+    // inclinar hacia la latitud destino y girar hacia la longitud destino
+    const y1=ny*cr+nz*sr,z1=-ny*sr+nz*cr;
+    const lat=Math.asin(Math.max(-1,Math.min(1,y1))),lon=Math.atan2(nx,z1)-rot;
+    let u=((lon/(2*Math.PI)+.5)%1+1)%1,v=.5-lat/Math.PI;
+    let cR=168,cG=92,cB=56;
+    if(texDatos){const tx=(u*1023)|0,ty=Math.max(0,Math.min(511,(v*511)|0)),j=(ty*1024+tx)*4;cR=texDatos[j];cG=texDatos[j+1];cB=texDatos[j+2]}
+    const luz=.35+.75*Math.max(0,nz*.8+nx*-.35+ny*.25),borde=Math.pow(1-nz,3);
+    d[i]=Math.min(255,cR*luz+255*borde*.45);d[i+1]=Math.min(255,cG*luz+170*borde*.4);d[i+2]=Math.min(255,cB*luz+110*borde*.35);d[i+3]=255}
+  const off=dibujarGlobo.c||(dibujarGlobo.c=document.createElement('canvas'));off.width=RES;off.height=RES;off.getContext('2d').putImageData(img,0,0);
+  ctx.save();ctx.translate(w/2,h/2);
+  const halo=ctx.createRadialGradient(0,0,R*.95,0,0,R*1.25);halo.addColorStop(0,'rgba(255,170,110,.35)');halo.addColorStop(1,'rgba(255,170,110,0)');ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,R*1.25,0,7);ctx.fill();
+  ctx.imageSmoothingEnabled=true;ctx.drawImage(off,-R,-R,R*2,R*2);ctx.restore();
+}
+// Mapa plano: zoom con mosaicos de Mars Trek centrado en el destino
+function dibujarMapa(w,h,z,o){
+  const L=Math.max(0,Math.min(7,Math.round(z))),s=2**(z-L),ts=256*s,cols=2**(L+1),rows=2**L;
+  const Wm=512*2**z,Hm=256*2**z,cx=(o.lon+180)/360*Wm,cy=(90-o.lat)/180*Hm,ox=w/2-cx,oy=h/2-cy;
+  const c0=Math.floor(-ox/ts),c1=Math.floor((w-ox)/ts),r0=Math.max(0,Math.floor(-oy/ts)),r1=Math.min(rows-1,Math.floor((h-oy)/ts));
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const cc=((c%cols)+cols)%cols,x=ox+c*ts,y=oy+r*ts;let im=tile(L,r,cc);
+    if(im)ctx.drawImage(im,x,y,ts+.5,ts+.5);else{let k=1;while(k<=L&&!im){im=tile(L-k,r>>k,cc>>k);if(im){const p=256>>k;ctx.drawImage(im,(cc%(1<<k))*p,(r%(1<<k))*p,p,p,x,y,ts+.5,ts+.5)}k++}if(!im){ctx.fillStyle='#7a3e22';ctx.fillRect(x,y,ts+.5,ts+.5)}}}
+  // grilla de latitud y longitud
+  const paso=z<4?10:z<6?2:z<7.5?.5:.1;ctx.strokeStyle='rgba(160,220,255,.28)';ctx.lineWidth=1;ctx.font=fuente(10);ctx.fillStyle='rgba(200,235,255,.7)';
+  const lon0=o.lon-w/2/Wm*360,lon1=o.lon+w/2/Wm*360,lat0=o.lat+h/2/Hm*180,lat1=o.lat-h/2/Hm*180;
+  for(let lo=Math.ceil(lon0/paso)*paso;lo<=lon1;lo+=paso){const x=ox+(lo+180)/360*Wm;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+  for(let la=Math.ceil(lat1/paso)*paso;la<=lat0;la+=paso){const y=oy+(90-la)/180*Hm;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+}
+function hud(w,h,tt,o,tx){
+  // tinte de pantalla de carga, viñeta y líneas de barrido
+  ctx.fillStyle='rgba(0,30,60,.18)';ctx.fillRect(0,0,w,h);
+  const vg=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.3,w/2,h/2,Math.max(w,h)*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.75)');ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,.035)';for(let y=(tt*40)%4;y<h;y+=4)ctx.fillRect(0,y,w,1);
+  const sy=(tt*.35%1)*h;const gb=ctx.createLinearGradient(0,sy-60,0,sy);gb.addColorStop(0,'rgba(120,200,255,0)');gb.addColorStop(1,'rgba(120,200,255,.16)');ctx.fillStyle=gb;ctx.fillRect(0,sy-60,w,60);
+  // retícula que se cierra sobre el destino
+  const k=suave((tt-T_GLOBO)/(DUR-T_GLOBO-1.6)),tam=Math.max(34,(1-k)*Math.min(w,h)*.42+34);
+  ctx.strokeStyle=k>=.98?'#ffb066':'#9fe0ff';ctx.lineWidth=2;
+  for(const[sx,sy2]of[[-1,-1],[1,-1],[-1,1],[1,1]]){const x=w/2+sx*tam,y=h/2+sy2*tam;ctx.beginPath();ctx.moveTo(x,y-sy2*tam*.35);ctx.lineTo(x,y);ctx.lineTo(x-sx*tam*.35,y);ctx.stroke()}
+  ctx.beginPath();ctx.arc(w/2,h/2,4,0,7);ctx.stroke();
+  ctx.font=fuente(11);ctx.fillStyle='#9fe0ff';ctx.fillText(fmtG(o.lat,'NS')+' · '+(((o.lon+360)%360).toFixed(2).replace('.',','))+'° E',w/2+tam+8,h/2-tam+12);
+}
+function cuadro(now){
+  if(!activo||activo.fin)return;
+  const{o,tx}=activo,tt=(now-activo.t0)/1000,dpr=Math.min(2,window.devicePixelRatio||1),w=innerWidth,h=innerHeight;
+  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
+  // estrellas
+  ctx.fillStyle='#fff';for(let i=0;i<180;i++){const x=(i*97.3)%w,y=(i*61.7)%h;ctx.globalAlpha=.25+.5*((i*13)%7)/7;ctx.fillRect(x,y,1.3,1.3)}ctx.globalAlpha=1;
+  if(tt<T_GLOBO+.6)dibujarGlobo(w,h,tt,o);
+  if(tt>T_GLOBO){ctx.globalAlpha=suave((tt-T_GLOBO)/.6);const z=2.4+5.6*suave((tt-T_GLOBO)/(DUR-T_GLOBO-1.2));dibujarMapa(w,h,z,o);ctx.globalAlpha=1}
+  hud(w,h,tt,o,tx);
+  // textos
+  const alt=Math.round(Math.max(0,400*Math.pow(1-Math.min(1,tt/(DUR-1)),2.2))*10)/10;
+  eEstado.textContent=tt<1.2?tx.adquiriendo:tt<T_GLOBO?tx.aproximacion:tt<DUR-2.4?tx.sector:tx.listo;
+  ePaso.textContent=tt<T_GLOBO?'':o.nombre;
+  eTele.innerHTML=`${tx.altitud}: ${alt.toLocaleString('es-AR')} km<br>LAT ${fmtG(o.lat,'NS')}<br>LON ${(((o.lon+360)%360).toFixed(2)).replace('.',',')}° E<br>MARS TREK · VIKING MDIM 2.1`;
+  if(tt>DUR-3.6){eRotulo.style.opacity=1;eRotulo.style.transform='none'}
+  eBarra.style.width=Math.min(100,tt/DUR*100)+'%';
+  if(tt>=DUR){terminar();return}
+  requestAnimationFrame(cuadro);
+}
+return{reproducir,saltar:terminar,precargar:pedirTextura,get activo(){return !!activo}};
+})();
+</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -559,7 +692,7 @@ function addMarker(item, active) {
   markers.push({ item, active, ring, hit, lab, p });
 }
 SITES.forEach(s => addMarker(s, true));
-UPCOMING.forEach(s => addMarker(s, false));
+
 
 let gRotY = 0, gRotX = 0.2, gTY = 0, gTX = 0.2, autoRot = !reduceMotion;
 let selected = null;
@@ -580,7 +713,7 @@ SITES.forEach(s => {
   li.firstChild.addEventListener('click', () => selectSite(s.id));
   listEl.appendChild(li);
 });
-UPCOMING.forEach(u => { const sp = document.createElement('span'); sp.textContent = u.name; $('#soon-list').appendChild(sp); });
+
 function selectSite(id) {
   selected = SITES.find(s => s.id === id);
   document.querySelectorAll('.site').forEach(b => b.setAttribute('aria-pressed', b.dataset.id === id ? 'true' : 'false'));
@@ -593,7 +726,14 @@ function selectSite(id) {
   autoRot = false; focusGlobe(selected);
 }
 selectSite('jezero');
-$('#btn-deploy').addEventListener('click', () => enterSite(selected));
+// Al elegir el lugar: descenso orbital con la cartografía de NASA Mars Trek y después el aterrizaje del rover
+$('#btn-deploy').addEventListener('click', () => {
+  const s = selected; if (!s) return;
+  if (typeof Descenso === 'undefined') { enterSite(s); return; }
+  $('#menu').hidden = true; labelsEl.hidden = true;
+  Descenso.reproducir({ lat: s.lat, lon: s.lon, nombre: s.name.toUpperCase(), sub: (s.sub ? s.sub + ' · ' : '') + fmtLat(s.lat) + ' · ' + fmtLon(s.lon),
+    textos: { sector: 'Zona de exploración' }, alFinal: () => enterSite(s) });
+});
 
 /* ================= Escena de exploración ================= */
 const SZ = 600, SEG = 300, BOUND = SZ / 2 - 14, MAXV = 2.9, SLOPE_MAX = Math.tan(30 * D2R), NEAR = 14;
@@ -991,8 +1131,41 @@ function buildSite(site) {
   }
   mx.putImageData(mi, 0, 0);
 
-  return { site, scene, camera, sky, sun, sunDir, terrain, rover, st, poiObjs, tracks, trackNext: 0, trackDist: 0, dust, mm, heli, ctrl: 'rover', dep: null,
+  const pelota = crearPelota(site); scene.add(pelota.g);
+  return { pelota, site, scene, camera, sky, sun, sunDir, terrain, rover, st, poiObjs, tracks, trackNext: 0, trackDist: 0, dust, mm, heli, ctrl: 'rover', dep: null,
     camMode: 'chase', camOff: 0, camDist: 10, camPos: null, clock: 10 * 3600, battery: 100, analyzing: false, near: null, nearAir: null, warnT: 0, msgT: 0, snap: null };
+}
+
+/* ---------- Coleccionable oculto: una pelota de fútbol medio enterrada en el polvo rojo ---------- */
+function texturaPelota() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#f2efe8'; g.fillRect(0, 0, 512, 256);
+  const pent = (x, y, r) => { g.beginPath(); for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + k * 2 * Math.PI / 5; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.closePath(); g.fillStyle = '#1b1b1d'; g.fill(); };
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 6; i++) pent(i * 86 + (j % 2) * 43 + 20, 40 + j * 88, 22);
+  g.strokeStyle = 'rgba(120,110,100,.6)'; g.lineWidth = 2; for (let i = 0; i < 12; i++) { g.beginPath(); g.moveTo(i * 43, 0); g.lineTo(i * 43 + 30, 256); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function crearPelota(site) {
+  // lugar fijo para cada sitio, lejos de los objetivos y a una distancia caminable desde el inicio
+  const r = rng(site.id.length * 977 + 31); let x = 0, z = 0;
+  for (let k = 0; k < 40; k++) { const a = r() * Math.PI * 2, d = 45 + r() * 50; x = site.start.x + Math.cos(a) * d; z = site.start.z + Math.sin(a) * d;
+    if (Math.abs(x) < BOUND - 20 && Math.abs(z) < BOUND - 20 && !site.pois.some(p => Math.hypot(x - p.x, z - p.z) < 25)) break; }
+  const R = 0.11; // radio real de una pelota de fútbol (unos 22 cm de diámetro)
+  const g = new THREE.Group();
+  const bola = new THREE.Mesh(new THREE.SphereGeometry(R, 24, 16), new THREE.MeshStandardMaterial({ map: texturaPelota(), roughness: .75 }));
+  bola.castShadow = true; bola.rotation.set(.6, 1.1, .3); g.add(bola);
+  const monticulo = new THREE.Mesh(new THREE.CylinderGeometry(R * 1.7, R * 2.4, R * .5, 18), new THREE.MeshStandardMaterial({ color: new THREE.Color(...site.rock).multiplyScalar(1.35), roughness: 1 }));
+  monticulo.position.y = -R * .15; g.add(monticulo);
+  g.position.set(x, site.height(x, z) - R * .35, z);  // hundida un tercio en la tierra
+  return { g, x, z, hallada: false };
+}
+function revisarPelota() {
+  const p = cur && cur.pelota; if (!p || p.hallada) return;
+  const ox = cur.ctrl === 'heli' && cur.heli ? null : cur.st;
+  if (!ox || Math.hypot(ox.x - p.x, ox.z - p.z) > 4) return;
+  p.hallada = true;
+  let n = 0; try { const k = 'tronador-pelotas', s = new Set(JSON.parse(localStorage.getItem(k) || '[]')); s.add(cur.site.id); localStorage.setItem(k, JSON.stringify([...s])); n = s.size; } catch (_) {}
+  showMsg('Coleccionable oculto', '¡Encontraste una pelota de fútbol!', 'Estaba medio enterrada en el polvo rojo de ' + cur.site.name + '.' + (n ? ' Llevás ' + n + ' de 3.' : ''), 7);
 }
 
 /* Partículas de polvo reutilizables (aterrizaje y viento de los rotores) */
@@ -1349,7 +1522,7 @@ function takePhoto(p) {
   const cw = Math.min(src.width, src.height * 4 / 3), ch = cw * 3 / 4;
   ctx.drawImage(src, (src.width - cw) / 2, (src.height - ch) / 2, cw, ch, 0, 0, 640, 480);
   ctx.fillStyle = 'rgba(8,6,6,.6)'; ctx.fillRect(0, 446, 640, 34);
-  ctx.fillStyle = '#f2e7da'; ctx.font = '15px IBM Plex Mono, monospace';
+  ctx.fillStyle = '#f2e7da'; ctx.font = 'bold 15px Helvetica, Arial, sans-serif';
   ctx.fillText(`RTE · vuelo ${h.flights} · ${fmt1(Math.max(0, h.y - H(h.x, h.z)))} m · ${p.name}`, 12, 468);
   cur.sky.position.copy(cur.camera.position);
   renderer.render(cur.scene, cur.camera);
@@ -1422,6 +1595,7 @@ function updateCamBtn() {
 let hudT = 0;
 function updateHud(dt) {
   const st = cur.st;
+  revisarPelota();
   cur.clock += dt * 70;
   if (cur.warnT > 0) { cur.warnT -= dt; if (cur.warnT <= 0) $('#warn').hidden = true; }
   if (cur.msgT > 0) { cur.msgT -= dt; if (cur.msgT <= 0) $('#heli-msg').hidden = true; }
@@ -1487,7 +1661,7 @@ function updateHud(dt) {
     ctx.save(); ctx.translate(toM(hl.x), toM(hl.z)); ctx.strokeStyle = '#ffcd6b'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.moveTo(0, -7); ctx.lineTo(0, 7); ctx.stroke(); ctx.restore();
   }
-  ctx.fillStyle = 'rgba(12,10,11,.7)'; ctx.fillRect(4, 4, 18, 16); ctx.fillStyle = '#f2e7da'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.fillText('N', 9, 16);
+  ctx.fillStyle = 'rgba(12,10,11,.7)'; ctx.fillRect(4, 4, 18, 16); ctx.fillStyle = '#f2e7da'; ctx.font = 'bold 11px Helvetica, Arial, sans-serif'; ctx.fillText('N', 9, 16);
 }
 
 /* ---------- Análisis ---------- */
@@ -1800,6 +1974,7 @@ function exitSite() {
   resize();
 }
 $('#btn-back').addEventListener('click', exitSite);
+window.__exp = { get cur() { return cur; } }; // acceso para pruebas
 $('#btn-cam').addEventListener('click', (e) => {
   e.currentTarget.blur();
   if (!cur || cur.ctrl === 'deploy') return;
