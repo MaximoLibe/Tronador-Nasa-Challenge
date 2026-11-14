@@ -96,7 +96,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hud-dock-btn:disabled{opacity:.35;cursor:not-allowed}
 .hud-separador{width:1px;align-self:stretch;margin:6px 6px;background:rgba(148,179,214,.25);border:0}
 /* paneles laterales */
-#info{left:max(16px,env(safe-area-inset-left,0px));top:96px;width:320px;max-width:calc(100% - 32px);max-height:calc(100% - 300px);overflow:auto;border-radius:10px}
+#info{left:max(16px,env(safe-area-inset-left,0px));top:96px;width:320px;max-width:calc(100% - 32px);max-height:calc(100% - 112px - var(--bh,60px));overflow:auto;border-radius:10px}
 /* ===== Módulo de misiones con el asistente canino (arriba a la derecha) ===== */
 /* Oculto por defecto: sólo aparece cuando hay una misión nueva, una actualización o el jugador lo abre */
 #mision{position:fixed;top:90px;right:20px;z-index:6;display:flex;align-items:flex-start;max-height:calc(100vh - 110px - var(--bh,60px));transform:translateX(calc(100% + 40px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .35s,visibility 0s .5s}
@@ -184,7 +184,7 @@ body.modo-mando #view canvas{cursor:none}
 #hint{left:50%;transform:translateX(-50%);bottom:calc(var(--bh,90px) + 8px);font:600 12.5px var(--cond);letter-spacing:.6px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 10px;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
 #radtint{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(150,90,255,.25));opacity:0;transition:opacity 1s;z-index:2}
 /* modales */
-.ov{position:fixed;inset:0;z-index:20;background:rgba(3,8,18,.78);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(3,8,18,.78);display:grid;place-items:center;padding:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .modal{background:#081528;border:1px solid var(--line);border-radius:12px;max-width:760px;width:100%;max-height:88vh;overflow:auto;padding:22px 24px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .modal h2{font:700 30px var(--cond);letter-spacing:1px;margin:0 0 4px;text-transform:uppercase;text-wrap:balance}
 .modal .eyebrow{font:600 12px var(--cond);letter-spacing:2px;color:var(--accent);text-transform:uppercase}
@@ -202,58 +202,109 @@ body.modo-mando #view canvas{cursor:none}
 .primary{background:var(--accent2);border:1px solid var(--accent);border-radius:8px;padding:11px 22px;font:700 17px var(--cond);letter-spacing:1.5px;text-transform:uppercase;color:#fff}
 .primary:hover{background:var(--accent)}
 #loading{position:fixed;inset:0;display:grid;place-items:center;font:600 15px var(--cond);letter-spacing:2px;color:var(--muted);text-transform:uppercase;z-index:30;background:var(--bg)}
-@media (max-width:900px){
-  #info,#goals{top:auto;bottom:calc(var(--bh,90px) + 44px);max-height:38vh}
-  #goals{display:none}
-  #keys{display:none}
-  .stat{min-width:76px;padding:3px 7px}
-  .stat .v{font-size:15px}
+/* Pantallas angostas: los círculos bajan a una segunda fila y los paneles se apoyan sobre el dock */
+@media (max-width:1100px){
+  #topbar{flex-wrap:wrap}
+  .hud-espaciador{display:none}
+  #stats{order:2;flex:1 1 100%;flex-wrap:wrap}
+  #clockbox{order:1;flex:1 1 100%}
+  #mision,#info,#toasts{top:160px}
 }
-@media (prefers-reduced-motion:reduce){.stat.bad,.toast{animation:none}}
+@media (max-width:700px){
+  #info{top:auto;bottom:calc(var(--bh,60px) + 44px);max-height:38vh}
+  .hud-mcaja{width:min(310px,calc(100vw - 110px))}
+  .hud-dock-btn{min-width:64px}
+}
+@media (prefers-reduced-motion:reduce){.hud-stat.bad .hud-anillo,.toast{animation:none}#mision,#mision.mostrar{transition:opacity .2s}}
 </style>
 </head>
 <body>
 
+<!-- ===================== MENÚ DE INICIO (estado START_MENU) ===================== -->
+<div id="sm" role="dialog" aria-label="Menú de inicio">
+  <div class="sm-fondo"><img alt="" src="assets/menu-fondo.jpg"></div>
+  <canvas id="sm-estrellas"></canvas><div class="sm-sombra"></div>
+  <h1 class="sm-titulo">Misión Hábitat Marte<small>NASA Space Apps 2026 · Junior Astronaut Mission Trainer</small></h1>
+  <nav class="sm-nav" aria-label="Menú principal">
+    <ul class="sm-lista" id="sm-menu">
+      <li><button class="sm-btn on" data-act="jugar">Jugar</button></li>
+      <li><button class="sm-btn" data-act="expedicion">Modo Expedición</button></li>
+      <li><button class="sm-btn" data-act="aprende">Aprende</button></li>
+      <li><button class="sm-btn" data-act="opciones">Opciones</button></li>
+      <li><button class="sm-btn" data-act="salir">Salir del juego</button></li>
+    </ul>
+    <hr class="sm-linea"><p class="sm-credito">Hecho por el equipo Tronador</p>
+    <p class="sm-mando" id="sm-mando"></p>
+  </nav>
+</div>
+
+<!-- ===================== JUEGO (estado PLAYING) ===================== -->
+<div id="juego" hidden>
 <div id="view"></div>
 <div id="radtint"></div>
 <div id="markers"></div>
-<div id="loading">Preparando el aterrizaje…</div>
+<div id="mira" aria-hidden="true"></div>
 
 <header id="topbar" class="hud">
-  <div id="stats"></div>
+  <div class="hud-espaciador"></div>
+  <div id="stats" role="group" aria-label="Estadísticas en vivo"></div>
   <div id="clockbox">
     <div class="clock"><b id="clk">SOL 1 · 07:00</b><span id="wx">−60 °C · Sin vientos fuertes</span></div>
     <div class="speeds" role="group" aria-label="Velocidad del tiempo">
-      <button id="sp0" title="Pausa (Espacio)">❚❚</button><button id="sp1" class="on" title="Normal: 1 sol = 10 min">×1</button><button id="sp3" title="Rápido">×3</button><button id="sp10" title="Muy rápido">×10</button>
+      <button id="sp0" title="Pausa (Espacio / Start)">❚❚</button><button id="sp1" class="on" title="Normal: 1 sol = 10 min">×1</button><button id="sp3" title="Rápido">×3</button><button id="sp10" title="Muy rápido">×10</button>
     </div>
-    <button class="btn" id="goalsBtn">Objetivos</button>
-    <button class="btn" id="learnBtn">Aprende</button>
+    <button class="btn" id="goalsBtn" title="Objetivos (O / Back)">Objetivos</button>
   </div>
 </header>
 
 <aside id="info" class="hud glass" hidden></aside>
-<aside id="goals" class="hud glass"></aside>
+
+<!-- Módulo de misiones: el perro astronauta y su recuadro aparecen y se ocultan juntos -->
+<section id="mision" aria-live="polite" aria-label="Misión activa">
+  <div class="hud-perro"><img src="assets/perro-astronauta.jpg" alt="Perro astronauta, asistente de la misión"></div>
+  <div class="hud-mcaja" id="mision-caja"></div>
+</section>
+
 <div id="toasts" class="hud"></div>
 <div id="hint" class="hud" hidden></div>
-<div id="keys" class="hud"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> mover · <kbd>Q</kbd><kbd>E</kbd> girar · rueda / <kbd>Z</kbd><kbd>X</kbd> zoom<br><kbd>R</kbd> rotar pieza · <kbd>Esc</kbd> cancelar · clic derecho + arrastrar: girar cámara</div>
 
 <footer id="bottom" class="hud">
   <div id="tray" class="glass" hidden></div>
-  <nav id="cats" class="glass" aria-label="Herramientas de construcción"></nav>
+  <nav id="cats" aria-label="Herramientas de construcción"></nav>
 </footer>
+</div>
+<div id="loading" hidden>Preparando el aterrizaje…</div>
 
-<div class="ov" id="intro" hidden>
+<!-- ===================== OPCIONES: controles de teclado y Xbox 360 ===================== -->
+<div class="ov" id="opciones" hidden>
   <div class="modal">
-    <div class="eyebrow">NASA Space Apps 2026 · Junior Astronaut Mission Trainer</div>
-    <h2>Misión Hábitat Marte</h2>
-    <p>Dos astronautas acaban de aterrizar con un pequeño <b>Módulo de Control</b>. Tu trabajo es construir una base donde puedan <b>respirar, tomar agua, comer, estar bien y protegidos de la radiación</b>. Cada máquina usa energía y la energía no alcanza para todo. Cada decisión tiene un costo.</p>
-    <div class="ctl">
-      <div><b>Mover la cámara</b><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> o flechas. <kbd>Q</kbd> <kbd>E</kbd> para girar. Rueda del mouse o <kbd>Z</kbd> <kbd>X</kbd> para acercar.</div>
-      <div><b>Construir</b>Elegí una herramienta abajo (Hábitat, Energía, Oxígeno…) y hacé clic en el terreno. Cada cúpula nueva tiene que quedar <b>acoplada</b> a otra.</div>
-      <div><b>Vigilar</b>Arriba ves los recursos en vivo. Si uno parpadea en rojo, ¡actuá rápido!</div>
-      <div><b>El tiempo</b>Un sol (día marciano) dura 10 minutos de juego. Podés acelerar con ×3 o ×10.</div>
-    </div>
-    <button class="primary" id="startBtn">Empezar la misión</button>
+    <button class="btn" id="opcionesCerrar" style="float:right">Cerrar</button>
+    <div class="eyebrow">Opciones</div>
+    <h2>Controles</h2>
+    <p id="estadoMando" style="color:var(--muted)">Conectá un control de Xbox 360 por USB y apretá cualquier botón: se configura solo.</p>
+    <div class="tw"><table class="tabla-ctl">
+      <tr><th>Acción</th><th>Teclado y mouse</th><th>Control Xbox 360</th></tr>
+      <tr><td>Mover la cámara</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / flechas / arrastrar</td><td>Stick izquierdo</td></tr>
+      <tr><td>Girar e inclinar la cámara</td><td><kbd>Q</kbd> <kbd>E</kbd> / clic derecho + arrastrar</td><td>Stick derecho</td></tr>
+      <tr><td>Acercar / alejar</td><td>Rueda / <kbd>Z</kbd> <kbd>X</kbd></td><td><kbd>RT</kbd> acercar · <kbd>LT</kbd> alejar</td></tr>
+      <tr><td>Construir o seleccionar</td><td>Clic izquierdo</td><td><kbd>A</kbd> (en la mira del centro)</td></tr>
+      <tr><td>Cancelar / volver</td><td><kbd>Esc</kbd> / clic derecho</td><td><kbd>B</kbd></td></tr>
+      <tr><td>Rotar la pieza</td><td><kbd>R</kbd></td><td><kbd>X</kbd></td></tr>
+      <tr><td>Modo desarmar</td><td><kbd>0</kbd></td><td><kbd>Y</kbd></td></tr>
+      <tr><td>Categorías del dock</td><td><kbd>1</kbd> a <kbd>8</kbd> · <kbd>9</kbd> radar</td><td><kbd>LB</kbd> <kbd>RB</kbd></td></tr>
+      <tr><td>Elegir construcción</td><td>Clic en la tarjeta</td><td>Cruceta ← →</td></tr>
+      <tr><td>Semiesfera / semicilindro</td><td>Botones de la bandeja</td><td>Cruceta ↑ ↓</td></tr>
+      <tr><td>Pausa</td><td><kbd>Espacio</kbd></td><td><kbd>Start</kbd></td></tr>
+      <tr><td>Mostrar la misión</td><td><kbd>O</kbd></td><td><kbd>Back</kbd></td></tr>
+    </table></div>
+  </div>
+</div>
+
+<div class="ov" id="adios" hidden>
+  <div class="modal" style="text-align:center">
+    <h2>¡Gracias por jugar!</h2>
+    <p>El navegador no deja que una página se cierre sola. Podés cerrar esta pestaña cuando quieras.</p>
+    <button class="primary" id="adiosVolver">Volver al menú</button>
   </div>
 </div>
 
@@ -312,9 +363,14 @@ body.modo-mando #view canvas{cursor:none}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-(()=>{
+/* =====================================================================
+   NÚCLEO DEL JUEGO (estado PLAYING)
+   Todo lo de adentro de iniciarJuego() se construye y arranca recién
+   cuando el jugador elige "Jugar" en el menú de inicio.
+   ===================================================================== */
+function iniciarJuego(){
 const $=s=>document.querySelector(s);
-if(!window.THREE){$('#loading').textContent='No se pudo cargar el motor 3D. Revisá la conexión y recargá la página.';return}
+if(!window.THREE){$('#loading').hidden=false;$('#loading').textContent='No se pudo cargar el motor 3D. Revisá la conexión y recargá la página.';return}
 // ======================= DATOS =======================
 const GRID=22, CELL=2;
 const HOUR_SEC=25;               // 1 sol = 24 h × 25 s = 10 minutos reales a ×1
@@ -356,16 +412,20 @@ const heatW=s=>s==='esfera'?200*Math.PI*8/3:50*Math.PI*4*6;
 const lightW=s=>s==='esfera'?4*Math.PI*3.6:6*2*7.15;
 const DONKI=['9 may 2024','13 may 2024','8 jun 2024','12 jun 2024','23 jul 2024','31 jul 2024','5 ago 2024','9 sep 2024','17 sep 2024','9 oct 2024','26 oct 2024','4 ene 2025','25 feb 2025','1 mar 2025'];
 const ICONS={
+ // Íconos de trazo fino (se pintan con stroke, así cambian de color en hover/activo y escalan sin pixelarse)
  habitat:'<path d="M3 20h18M5 20v-6a7 7 0 0 1 14 0v6M10 20v-4h4v4"/>',
  energia:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
- oxigeno:'<circle cx="9" cy="12" r="5"/><path d="M16 15c0-1.5 3-1.5 3 0s-3 2-3 3.5h3"/>',
+ oxigeno:'<circle cx="8" cy="12" r="4.5"/><circle cx="16" cy="12" r="4.5"/><path d="M10.3 10.6h3.4M10.3 13.4h3.4"/>',
  agua:'<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
  alimentos:'<path d="M5 19c0-8 6-13 14-14-1 8-6 14-14 14zM5 19l7-7"/>',
  salud:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M12 9v5M9.5 11.5h5"/>',
  proteccion:'<path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/>',
- comms:'<path d="M12 12v9M8 21h8M5 9a7 7 0 0 1 14 0M8 9a4 4 0 0 1 8 0"/><circle cx="12" cy="11" r="1"/>',
- radar:'<circle cx="12" cy="12" r="8"/><path d="M12 12l5-5M12 4v2M20 12h-2"/>',
+ comms:'<path d="M12 12v9M8 21h8M8.5 8.5a5 5 0 0 1 7 0M6 6a8.5 8.5 0 0 1 12 0"/><circle cx="12" cy="11" r="1.2"/>',
+ radar:'<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.2"/>',
  demoler:'<path d="M4 20l9-9M14 4l6 6-3 3-6-6zM3 21h7"/>',
+ cordura:'<circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M8.5 14.5c1.8 2 5.2 2 7 0"/>',
+ gastos:'<ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/>',
+ mision:'<path d="M12 2l3 3h4v4l3 3-3 3v4h-4l-3 3-3-3H5v-4l-3-3 3-3V5h4z"/><path d="M8.5 12l2.3 2.3 4.7-4.7"/>',
 };
 const CATS=[
  {id:'habitat',name:'Hábitat',items:['esclusa','dormitorio']},
@@ -525,10 +585,11 @@ function gameOver(){
   S.over=true;setSpeed(0);
   const why=S.res.o2<=0?'se acabó el oxígeno':S.res.water<=0?'se acabó el agua':S.res.food<=0?'se acabó la comida':S.cold?'la base se quedó sin calefacción':S.dose>DOSE_LIMIT?'recibieron demasiada radiación':'la tripulación estaba agotada';
   $('#endBox').innerHTML=`<div class="eyebrow">Fin de la misión · Sol ${S.sol}</div><h2>La tripulación vuelve a la Tierra</h2><p>Todos están a salvo, pero la misión terminó porque ${why}.</p><p>Las misiones reales también aprenden de sus errores. ¿Qué cambiarías? Tal vez más energía antes de construir MOXIE, o una batería extra para la noche.</p><button class="primary" id="againBtn">Intentar otra vez</button>`;
-  $('#endOv').hidden=false;$('#againBtn').onclick=()=>{$('#endOv').hidden=true;newGame();setSpeed(1);renderGoals()};
+  $('#endOv').hidden=false;$('#againBtn').onclick=()=>{$('#endOv').hidden=true;newGame();setSpeed(1);ocultarMision();setTimeout(()=>anunciarMision(),900)};
 }
+// ---- Disparador de misiones: detecta objetivos cumplidos y avisa al módulo del perro ----
 function checkMissions(){
-  MISSIONS.forEach((m,k)=>{if(!S.done[k]&&m.c()){S.done[k]=true;S.res.mat+=15;toast('Objetivo cumplido: '+m.t+' (+15 de presupuesto)','good');renderGoals()}});
+  MISSIONS.forEach((m,k)=>{if(!S.done[k]&&m.c()){S.done[k]=true;S.res.mat+=15;lastSpend=0;misionCumplida(k)}});
   if(!S.won&&S.done.filter(Boolean).length===MISSIONS.length){S.won=true;setSpeed(0);
     $('#endBox').innerHTML=`<div class="eyebrow">Misión cumplida</div><h2>Base marciana autosuficiente</h2><p>Tu tripulación respira, come, toma agua, está protegida de la radiación y está bien. Así trabajan los planificadores de misiones de la NASA: equilibrando energía, soporte vital y seguridad.</p><p>Metano fabricado para el cohete de regreso: <b>${fmt(S.res.ch4,1)} kg</b>. Dosis de radiación de la misión: <b>${fmt(S.dose,1)} mSv</b>.</p><button class="primary" id="contBtn">Seguir jugando</button>`;
     $('#endOv').hidden=false;$('#contBtn').onclick=()=>{$('#endOv').hidden=true;setSpeed(1)}}
@@ -755,12 +816,26 @@ addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,textarea'))return;
   const k=e.key.toLowerCase();keys.add(k);
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(k==='escape'){if(!$('#learn').hidden){$('#learn').hidden=true;return}setTool(null);setCat(null);sel=null;renderInfo()}
+  if(k==='escape'){cancelar();return}
+  if(hayModalAbierto())return;
   if(k==='r'){rot^=1;rebuildGhost()}
   if(k===' '&&!S.over)setSpeed(speed?0:1);
   if(k==='delete'&&sel&&sel.type!=='control')demolish(sel);
+  if(k==='o')alternarMision();
+  if(k==='9')alternarRadar();
+  if(k==='0')alternarDemoler();
   const n=parseInt(k);if(n>=1&&n<=CATS.length)setCat(CATS[n-1].id===cat?null:CATS[n-1].id);
 });
+// Modales que pausan la entrada del juego (Aprende, Opciones y fin de misión)
+function hayModalAbierto(){return ['#learn','#opciones','#endOv'].some(s=>!$(s).hidden)}
+// "Volver / cancelar": cierra el modal abierto o suelta la herramienta actual (Esc, clic derecho o B del control)
+function cancelar(){
+  if(!$('#learn').hidden){$('#learn').hidden=true;return}
+  if(!$('#opciones').hidden){$('#opciones').hidden=true;return}
+  if(tool||protTool||cat){setTool(null);protTool=null;setCat(null);return}
+  if(sel||showEnergy){sel=null;showEnergy=false;renderInfo();return}
+  if(misionVisible)ocultarMision();
+}
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 addEventListener('blur',()=>keys.clear());
 function updateCamera(dt){
@@ -784,7 +859,7 @@ function pickMod(){const hit=ray.intersectObjects(modRoot.children,true).find(h=
 const cvs=renderer.domElement;
 cvs.addEventListener('contextmenu',e=>e.preventDefault());
 cvs.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,b:e.button,moved:false,yaw:camS.yaw,pitch:camS.pitch,tx:camS.tx,tz:camS.tz};cvs.setPointerCapture(e.pointerId)});
-cvs.addEventListener('pointermove',e=>{setMouse(e);hoverCell=groundCell();
+cvs.addEventListener('pointermove',e=>{if(usandoMando&&Math.abs(e.movementX)+Math.abs(e.movementY)<2)return;modoMando(false);setMouse(e);hoverCell=groundCell();
   if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;
   if(drag.b===2){camS.yaw=drag.yaw-dx*.006;camS.pitch=Math.max(.32,Math.min(1.35,drag.pitch+dy*.004))}
   else{const k=camS.dist*.0022,cy=Math.cos(camS.yaw),sy=Math.sin(camS.yaw);camS.tx=drag.tx-(dx*cy+dy*sy)*k;camS.tz=drag.tz-(-dx*sy+dy*cy)*k}});
@@ -843,24 +918,45 @@ function makeThumbs(){
   tr.dispose();tr.forceContextLoss&&tr.forceContextLoss();
 }
 // ======================= HUD =======================
-function stat(id,label,val,sub,frac,state,tip,clickable){return`<div class="stat ${state||''} ${clickable?'click':''}" data-s="${id}" title="${tip}" ${clickable?'role="button" tabindex="0"':''}><span class="lb"><i class="live"></i>${label}</span><span class="v">${val}<small>${sub}</small></span><span class="gauge"><i style="width:${Math.max(0,Math.min(100,frac*100))}%"></i></span></div>`}
+/* ===================== BARRA SUPERIOR: 8 INDICADORES CIRCULARES =====================
+   Orden fijo: Agua, Oxígeno, Alimentos, Energía, Protección, Cordura, Salud, Gastos.
+   El anillo usa stroke-dasharray / stroke-dashoffset: 0 = vacío, 1 = lleno. */
+const RADIO_ANILLO=24,PERIMETRO=2*Math.PI*RADIO_ANILLO;
+const COLOR_STAT={agua:'#3fd8f2',oxigeno:'#7cc4ff',alimentos:'#9bd65a',energia:'#ffd23f',proteccion:'#7f9cc4',cordura:'#b48cff',salud:'#34d399',gastos:'#f0a830'};
+function construirStats(){
+  const ids=['agua','oxigeno','alimentos','energia','proteccion','cordura','salud','gastos'];
+  const nombres={agua:'Agua',oxigeno:'Oxígeno',alimentos:'Alimentos',energia:'Energía',proteccion:'Protección',cordura:'Cordura',salud:'Salud',gastos:'Gastos'};
+  const clic={energia:'Ver de dónde sale y a dónde va la energía',proteccion:'Abrir Protección'};
+  $('#stats').innerHTML=ids.map(id=>`<${clic[id]?'button':'div'} class="hud-stat${clic[id]?' click':''}" data-s="${id}" style="--c:${COLOR_STAT[id]}">
+    <span class="hud-anillo"><svg viewBox="0 0 54 54"><circle class="pista" cx="27" cy="27" r="${RADIO_ANILLO}"/><circle class="progreso" cx="27" cy="27" r="${RADIO_ANILLO}" stroke-dasharray="${PERIMETRO}" stroke-dashoffset="${PERIMETRO}"/></svg>
+    <span class="hud-centro"><svg viewBox="0 0 24 24">${ICONS[id==='oxigeno'?'oxigeno':id==='alimentos'?'alimentos':id]}</svg><b>—</b></span></span>
+    <span class="hud-etiqueta">${nombres[id]}</span></${clic[id]?'button':'div'}>`).join('');
+  $('#stats [data-s=energia]').onclick=()=>{sel=null;showEnergy=true;renderInfo()};
+  $('#stats [data-s=proteccion]').onclick=()=>setCat('proteccion');
+}
+// Actualiza un círculo: valor visible, fracción del anillo (0..1), estado (''/warn/bad) y texto de ayuda
+function stat(id,valor,frac,estado,ayuda){
+  const el=$('#stats [data-s='+id+']');if(!el)return;
+  el.className='hud-stat'+(el.tagName==='BUTTON'?' click':'')+(estado?' '+estado:'');
+  el.title=ayuda;el.querySelector('.hud-centro b').textContent=valor;
+  el.querySelector('.progreso').style.strokeDashoffset=PERIMETRO*(1-Math.max(0,Math.min(1,frac)));
+}
+const corto=(n,u)=>n>=10000?fmt(n/1000,0)+'k'+u:n>=1000?fmt(n/1000,1)+'k'+u:fmt(n,n<10?1:0)+u;
 function daysLeft(k){const r=S.rate[k]||0;if(r>=-.01)return{txt:'+'+fmt(r,1)+'/sol',d:99};const d=S.res[k]/-r;return{txt:fmt(r,1)+'/sol · '+(d<1?'<1 sol':fmt(d,0)+' soles'),d}}
 function lvl(d,v){return v<=0||d<3?'bad':d<8?'warn':''}
 function renderStats(){
   const R=S.res,net=S.pw.prod-S.pw.need,cap=battCap(),bp=cap?R.batt/cap:0;
   const w=daysLeft('water'),o=daysLeft('o2'),f=daysLeft('food');
   const prot=S.spe>0&&!S.shelter?'bad':S.dose>DOSE_LIMIT*.7?'warn':'';
-  $('#stats').innerHTML=
-    stat('agua','Agua',fmt(R.water,0)+' L',w.txt,Math.min(1,w.d/20),lvl(w.d,R.water),'Agua para tomar, higiene, cultivos y MOXIE. Cada astronauta usa 4 L netos por sol (el resto se recicla). Hielo sin procesar: '+fmt(R.ice)+' kg.')+
-    stat('o2','Oxígeno',fmt(R.o2,1)+' kg',o.txt,Math.min(1,o.d/20),lvl(o.d,R.o2),'Cada astronauta respira 0,84 kg de oxígeno por sol.')+
-    stat('food','Alimentos',fmt(R.food,1)+' kg',f.txt,Math.min(1,f.d/20),lvl(f.d,R.food),'Cada astronauta come 1 kg de verdura por sol. Suplementos (calcio, hierro, B12): '+fmt(R.supp)+'.')+
-    stat('energia','Energía',(net>=0?'+':'')+fmt(net)+' W','batería '+fmt(bp*100)+' %',bp,S.blackout?'bad':net<0&&bp<.3?'warn':'','Producción menos consumo, ahora mismo. Clic para ver el detalle.',true)+
-    stat('prot','Protección',fmt(S.dose,1)+' mSv',fmt(S.doseRate,2)+' mSv/sol'+(S.shelter?' · refugio':''),1-S.dose/DOSE_LIMIT,prot,'Dosis de radiación acumulada. Límite del juego: 150 mSv. El límite de toda la carrera de un astronauta de la NASA es 600 mSv. Clic para abrir Protección.',true)+
-    stat('cordura','Cordura',fmt(S.sanity)+' %',(S.dsan>=0?'+':'')+fmt(S.dsan,1)+'/sol',S.sanity/100,S.sanity<20?'bad':S.sanity<45?'warn':'','Cómo se siente la tripulación. Sube con ocio, cocina y mensajes de la Tierra.')+
-    stat('salud','Salud',fmt(S.health)+' %',(S.dhealth>=0?'+':'')+fmt(S.dhealth)+'/sol',S.health/100,S.health<30?'bad':S.health<60?'warn':'','Salud de la tripulación. Si llega a 0, la misión termina.')+
-    stat('crew','Tripulación',S.crew+' / '+beds(),'camas',Math.min(1,beds()?S.crew/beds():1),S.crew>beds()?'warn':'','Astronautas y camas disponibles.')+
-    stat('gastos','Gastos',fmt(R.mat),lastSpend?'último −'+lastSpend:'presupuesto',Math.min(1,R.mat/200),R.mat<10?'warn':'','Presupuesto para construir. Llega con los cohetes de la Tierra (+50) y al cumplir objetivos (+15).');
-  document.querySelectorAll('.stat.click').forEach(el=>el.onclick=()=>{if(el.dataset.s==='energia'){sel=null;showEnergy=true;renderInfo()}else setCat('proteccion')});
+  // Vinculación de cada círculo con las variables internas del juego (S.res, S.rate, S.pw, S.dose, S.sanity, S.health)
+  stat('agua',corto(R.water,' L'),Math.min(1,w.d/20),lvl(w.d,R.water),'Agua: '+fmt(R.water)+' L ('+w.txt+'). Cada astronauta usa 4 L netos por sol; el resto se recicla. Hielo sin procesar: '+fmt(R.ice)+' kg.');
+  stat('oxigeno',fmt(R.o2,R.o2<100?1:0)+' kg',Math.min(1,o.d/20),lvl(o.d,R.o2),'Oxígeno: '+fmt(R.o2,1)+' kg ('+o.txt+'). Cada astronauta respira 0,84 kg por sol.');
+  stat('alimentos',fmt(R.food,R.food<100?1:0)+' kg',Math.min(1,f.d/20),lvl(f.d,R.food),'Alimentos: '+fmt(R.food,1)+' kg ('+f.txt+'). Cada astronauta come 1 kg de verdura por sol. Suplementos (calcio, hierro, B12): '+fmt(R.supp)+'.');
+  stat('energia',(net>=0?'+':'−')+corto(Math.abs(net),'W'),bp,S.blackout?'bad':net<0&&bp<.3?'warn':'','Energía: '+(net>=0?'+':'')+fmt(net)+' W ahora (producción menos consumo). El anillo muestra la batería: '+fmt(bp*100)+' %. Clic para ver el detalle.');
+  stat('proteccion',fmt(S.dose,S.dose<100?1:0),1-S.dose/DOSE_LIMIT,prot,'Protección: dosis acumulada '+fmt(S.dose,1)+' mSv de un límite de juego de 150 mSv ('+fmt(S.doseRate,2)+' mSv/sol'+(S.shelter?', en el refugio':'')+'). El límite de toda la carrera de un astronauta de la NASA es 600 mSv. Clic para abrir Protección.');
+  stat('cordura',fmt(S.sanity)+'%',S.sanity/100,S.sanity<20?'bad':S.sanity<45?'warn':'','Cordura: '+fmt(S.sanity)+' % ('+(S.dsan>=0?'+':'')+fmt(S.dsan,1)+'/sol). Sube con ocio, cocina y mensajes de la Tierra.');
+  stat('salud',fmt(S.health)+'%',S.health/100,S.health<30?'bad':S.health<60?'warn':'','Salud: '+fmt(S.health)+' % ('+(S.dhealth>=0?'+':'')+fmt(S.dhealth)+'/sol). Si llega a 0, la misión termina. Tripulación: '+S.crew+' astronautas y '+beds()+' camas.');
+  stat('gastos',fmt(R.mat),Math.min(1,R.mat/200),R.mat<10?'warn':'','Gastos: quedan '+fmt(R.mat)+' de presupuesto'+(lastSpend?' (último gasto −'+lastSpend+')':'')+'. Llega con los cohetes de la Tierra (+50) y al cumplir misiones (+15).');
   const hh=Math.floor(S.hour),mm=Math.floor((S.hour-hh)*60);
   $('#clk').textContent=`SOL ${S.sol} · ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
   const se=sunElev(S.hour),temp=Math.round(-58+38*Math.max(-1,Math.min(1,sunElev(S.hour-2)))-(S.dust?6:0));
@@ -902,21 +998,54 @@ function renderInfo(){
   if($('#shd'))$('#shd').onclick=()=>{if(S.res.mat<10)return;S.res.mat-=10;lastSpend=10;m.shield=true;makeObj(m);toast('Cubriste la cúpula con regolito marciano: menos radiación adentro.','good');checkMissions();renderInfo()};
   if($('#dem'))$('#dem').onclick=()=>{if(!demolishArm){demolishArm=1;renderInfo();return}demolishArm=0;demolish(m)};
 }
-function renderGoals(){
-  const cur=MISSIONS.findIndex((m,k)=>!S.done[k]);
-  $('#goals').innerHTML=`<div class="ph"><h4>Objetivos<small>${S.done.filter(Boolean).length} de ${MISSIONS.length} cumplidos</small></h4><button class="x" id="gx">–</button></div><div class="pb">`+
-   MISSIONS.map((m,k)=>`<div class="goal${S.done[k]?' done':''}${k===cur?' cur':''}"><span class="ck">${S.done[k]?'✓':''}</span><div><b>${m.t}</b>${k===cur?`<p>${m.h}</p>`:''}</div></div>`).join('')+
-   `<div class="fact"><b>Próximo cohete:</b> en ${S.rocketIn} sol${S.rocketIn===1?'':'es'}. ${has('comms')?'La antena está lista.':'Sin antena no puede aterrizar.'}<br><b>Retraso Tierra–Marte:</b> ${fmt(S.delay)} minutos.</div></div>`;
-  $('#gx').onclick=()=>{$('#goals').hidden=true;$('#goalsBtn').classList.remove('on')};
+/* ===================== MÓDULO DE MISIONES (perro astronauta) =====================
+   Ciclo de vida:
+   1. anunciarMision(): aparece con la misión activa (deslizándose desde la derecha).
+   2. misionCumplida(k): marca el objetivo, muestra "cumplida" y se oculta junto con el perro.
+   3. Al rato aparece la misión siguiente. Si el jugador lo cierra, queda oculto hasta
+      la próxima misión o hasta que toque OBJETIVOS (tecla O / botón Back del control). */
+let misionVisible=false,verLista=false,misionTimer=0;
+const misionActual=()=>MISSIONS.findIndex((m,k)=>!S.done[k]);
+const hexIcono=hecho=>`<svg viewBox="0 0 24 24"><path d="M12 2.5 20.5 7.3v9.4L12 21.5 3.5 16.7V7.3z"/>${hecho?'<path d="M8 12.2l2.7 2.7L16.2 9.4" stroke-width="2"/>':''}</svg>`;
+function renderMision(cumplidaK){
+  const k=cumplidaK??misionActual(),total=MISSIONS.length,hechas=S.done.filter(Boolean).length;
+  const caja=$('#mision-caja');
+  if(k<0){caja.innerHTML=`<div class="hud-mcab"><svg viewBox="0 0 24 24">${ICONS.mision}</svg><h5>Base autosuficiente</h5><button class="x" id="mx" title="Cerrar">✕</button></div><p class="hud-mdesc" style="margin-left:0">¡Cumpliste las ${total} misiones! Seguí cuidando a la tripulación.</p>`;}
+  else{const m=MISSIONS[k],ok=cumplidaK!=null;
+    caja.innerHTML=`<div class="hud-mcab"><svg viewBox="0 0 24 24">${ICONS.mision}</svg><h5>${ok?'¡Misión cumplida!':'Misión '+(k+1)+' de '+total}</h5><button class="x" id="mx" title="Cerrar (O)">✕</button></div>
+    <div class="hud-mobj${ok?' hecho':''}">${hexIcono(ok)}<span>${m.t}</span></div>
+    ${ok?'':`<p class="hud-mdesc">${m.h}</p>`}
+    <div class="hud-mbarra"><i style="width:${hechas/total*100}%"></i></div>
+    <div class="hud-mpie"><span>Recompensa: +15 de presupuesto</span><button class="hud-mver" id="mver">${verLista?'Ocultar lista':'Ver todas'}</button></div>
+    ${verLista?`<div class="hud-mlista">${MISSIONS.map((x,i)=>`<div class="hud-mobj ${S.done[i]?'hecho':i===k?'actual':'pend'}">${hexIcono(S.done[i])}<span>${x.t}</span></div>`).join('')}
+      <p class="hud-mdesc" style="margin-left:0">Próximo cohete en ${S.rocketIn} sol${S.rocketIn===1?'':'es'}${has('comms')?'.':': sin antena no puede aterrizar.'} Retraso Tierra–Marte: ${fmt(S.delay)} min.</p></div>`:''}`;}
+  $('#mx').onclick=ocultarMision;
+  if($('#mver'))$('#mver').onclick=()=>{verLista=!verLista;renderMision(cumplidaK)};
+  $('#mision').classList.toggle('cumplida',cumplidaK!=null);
 }
+function mostrarMision(){misionVisible=true;$('#mision').classList.add('mostrar');$('#goalsBtn').classList.add('on')}
+function ocultarMision(){misionVisible=false;$('#mision').classList.remove('mostrar');$('#goalsBtn').classList.remove('on')}
+function anunciarMision(){clearTimeout(misionTimer);if(misionActual()<0&&S.won)return;renderMision();mostrarMision()}
+function alternarMision(){if(misionVisible)ocultarMision();else anunciarMision()}
+function misionCumplida(k){
+  clearTimeout(misionTimer);renderMision(k);mostrarMision();
+  toast('Objetivo cumplido: '+MISSIONS[k].t+' (+15 de presupuesto)','good');
+  misionTimer=setTimeout(()=>{ocultarMision();misionTimer=setTimeout(()=>{if(misionActual()>=0)anunciarMision()},1200)},3800);
+}
+/* ===================== DOCK INFERIOR =====================
+   10 botones: 8 categorías de construcción, separador, Radar y Desarmar.
+   Cada botón se vincula con la lógica que ya existía (setCat / radar / setTool('demoler')). */
+let padDock=-1;   // botón resaltado por el control de Xbox (LB / RB)
 function renderCats(){
-  $('#cats').innerHTML=CATS.map((c,k)=>`<button class="cat${cat===c.id?' on':''}" data-c="${c.id}" title="${c.name} (tecla ${k+1})"><svg viewBox="0 0 24 24">${ICONS[c.id]}</svg>${c.name}</button>`).join('')+
-   `<span class="sep"></span><button class="cat${radar?' on':''}" id="radarBtn" title="Radar de hielo"><svg viewBox="0 0 24 24">${ICONS.radar}</svg>Radar</button><button class="cat${tool==='demoler'?' on':''}" id="demBtn" title="Desarmar estructuras"><svg viewBox="0 0 24 24">${ICONS.demoler}</svg>Desarmar</button>`;
-  document.querySelectorAll('.cat[data-c]').forEach(b=>b.onclick=()=>setCat(cat===b.dataset.c?null:b.dataset.c));
-  $('#radarBtn').onclick=()=>{radar=!radar;iceMesh.visible=radar;renderCats();if(radar)toast('Radar: las zonas celestes tienen hielo de agua bajo el suelo.')};
-  $('#demBtn').onclick=()=>{setCat(null);setTool(tool==='demoler'?null:'demoler');if(tool)toast('Modo desarmar: hacé clic en una estructura. Recuperás la mitad del costo.')};
+  $('#cats').innerHTML=CATS.map((c,k)=>`<button class="hud-dock-btn${cat===c.id?' on':''}${padDock===k?' pad':''}" data-c="${c.id}" title="${c.name} (tecla ${k+1})"><svg viewBox="0 0 24 24">${ICONS[c.id]}</svg>${c.name}</button>`).join('')+
+   `<span class="hud-separador" role="separator"></span><button class="hud-dock-btn${radar?' on':''}" id="radarBtn" title="Radar de hielo (tecla 9)"><svg viewBox="0 0 24 24">${ICONS.radar}</svg>Radar</button><button class="hud-dock-btn${tool==='demoler'?' on':''}" id="demBtn" title="Desarmar estructuras (tecla 0)"><svg viewBox="0 0 24 24">${ICONS.demoler}</svg>Desarmar</button>`;
+  document.querySelectorAll('.hud-dock-btn[data-c]').forEach(b=>b.onclick=()=>setCat(cat===b.dataset.c?null:b.dataset.c));
+  $('#radarBtn').onclick=alternarRadar;
+  $('#demBtn').onclick=alternarDemoler;
   document.documentElement.style.setProperty('--bh',$('#bottom').offsetHeight+'px');
 }
+function alternarRadar(){radar=!radar;iceMesh.visible=radar;renderCats();if(radar)toast('Radar: las zonas celestes tienen hielo de agua bajo el suelo.')}
+function alternarDemoler(){setCat(null);setTool(tool==='demoler'?null:'demoler');if(tool)toast('Modo desarmar: elegí una estructura. Recuperás la mitad del costo.')}
 function cardHTML(t){const d=DEF[t],c=costOf(t,shape),locked=d.kind==='ext'&&!has('esclusa');
   const pw=d.prod?'+'+fmt(d.prod)+' W':d.w?'−'+fmt(d.w)+' W':t==='bateria'?'432 kWh':'Camas';
   return`<button class="cardb${tool===t?' on':''}" data-t="${t}" ${S.res.mat<c||locked?'disabled':''} title="${d.desc}"><img alt="" src="${THUMB[t+(d.kind==='dome'?shape:'')]||''}"><b>${d.name}</b><small><span>${locked?'Necesita Esclusa':pw}</span><em>${c}</em></small></button>`}
@@ -942,11 +1071,7 @@ function setTool(t){tool=t;if(t)protTool=null;if(t==='taladro'&&!radar){radar=tr
 function toast(msg,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.textContent=msg;const box=$('#toasts');box.prepend(el);while(box.children.length>4)box.lastChild.remove();setTimeout(()=>el.remove(),msg.length>90?9000:5000)}
 function setSpeed(s){speed=s;[0,1,3,10].forEach(k=>$('#sp'+k).classList.toggle('on',speed===k))}
 [0,1,3,10].forEach(k=>$('#sp'+k).onclick=()=>{if(!S.over)setSpeed(k)});
-$('#learnBtn').onclick=()=>$('#learn').hidden=false;$('#learnClose').onclick=()=>$('#learn').hidden=true;
-$('#learn').onclick=e=>{if(e.target.id==='learn')$('#learn').hidden=true};
-$('#goalsBtn').onclick=()=>{const g=$('#goals');g.hidden=!g.hidden;$('#goalsBtn').classList.toggle('on',!g.hidden)};
-$('#goalsBtn').classList.add('on');
-$('#startBtn').onclick=()=>{$('#intro').hidden=true;setSpeed(1);toast('Primer objetivo: construí una Esclusa acoplada al Módulo de Control (categoría Hábitat).')};
+$('#goalsBtn').onclick=alternarMision;
 // marcadores
 const mkEls=new Map();
 function updateMarkers(){
@@ -963,6 +1088,53 @@ function updateMarkers(){
   }
   for(const[id,el]of mkEls)if(!live.has(id)){el.remove();mkEls.delete(id)}
 }
+/* ===================== CONTROL DE XBOX 360 (dentro del juego) =====================
+   El sondeo del Gamepad API está en el script del menú (Mando); acá sólo se
+   traduce el estado del control a acciones del juego. Mapeo estándar:
+   0 A · 1 B · 2 X · 3 Y · 4 LB · 5 RB · 6 LT · 7 RT · 8 Back · 9 Start · 11 R3 · 12-15 cruceta */
+let usandoMando=false;
+function modoMando(on){if(usandoMando===on)return;usandoMando=on;document.body.classList.toggle('modo-mando',on);if(!on){padDock=-1;renderCats()}}
+const ZM=.18; // zona muerta de los sticks
+const eje=v=>Math.abs(v)<ZM?0:(v-Math.sign(v)*ZM)/(1-ZM);
+function moverCursorTarjeta(dir){
+  if(!cat)return;
+  if(cat==='proteccion'){if(dir>0){protTool=protTool==='shield'?null:'shield';tool=null;rebuildGhost();renderTray();if(protTool)toast('Apuntá la mira a una cúpula y apretá A para cubrirla con regolito.')}else{$('#shelterBtn')&&$('#shelterBtn').click()}return}
+  const items=CATS.find(c=>c.id===cat).items;if(!items.length)return;
+  let i=items.indexOf(tool);i=i<0?(dir>0?0:items.length-1):(i+dir+items.length)%items.length;
+  setTool(items[i]);
+}
+window.manejarMandoJuego=function(p,dt){
+  if(Math.abs(p.ejes[0])+Math.abs(p.ejes[1])+Math.abs(p.ejes[2])+Math.abs(p.ejes[3])>ZM||p.algunBoton)modoMando(true);
+  // Con un modal abierto: A acepta el botón principal, B cierra
+  if(hayModalAbierto()){
+    if(p.apretado(0)){const b=document.querySelector('#endOv:not([hidden]) .primary');if(b)b.click()}
+    if(p.apretado(1)||p.apretado(9))cancelar();
+    return;
+  }
+  // Cámara: stick izquierdo mueve, stick derecho gira/inclina, gatillos hacen zoom
+  const lx=eje(p.ejes[0]),ly=eje(p.ejes[1]),rx=eje(p.ejes[2]),ry=eje(p.ejes[3]);
+  const sp=camS.dist*1.1*dt,cy=Math.cos(camS.yaw),sy=Math.sin(camS.yaw);
+  camS.tx+=(lx*cy+ly*sy)*sp;camS.tz+=(-lx*sy+ly*cy)*sp;
+  camS.yaw-=rx*1.8*dt;camS.pitch=Math.max(.32,Math.min(1.35,camS.pitch+ry*1.2*dt));
+  const lt=p.botones[6]||0,rt=p.botones[7]||0;
+  if(rt>.1)camS.dist=Math.max(12,camS.dist*(1-1.4*rt*dt));
+  if(lt>.1)camS.dist=Math.min(140,camS.dist*(1+1.4*lt*dt));
+  // Botones
+  if(p.apretado(0))click();
+  if(p.apretado(1))cancelar();
+  if(p.apretado(2)){rot^=1;rebuildGhost()}
+  if(p.apretado(3))alternarDemoler();
+  if(p.apretado(4)||p.apretado(5)){
+    const d=p.apretado(5)?1:-1,k=cat?CATS.findIndex(c=>c.id===cat):(d>0?-1:CATS.length);
+    padDock=(k+d+CATS.length)%CATS.length;setCat(CATS[padDock].id);
+  }
+  if(p.apretado(14))moverCursorTarjeta(-1);
+  if(p.apretado(15))moverCursorTarjeta(1);
+  if(p.apretado(12)||p.apretado(13)){shape=p.apretado(12)?'esfera':'cilindro';rebuildGhost();renderTray();renderInfo()}
+  if(p.apretado(9)&&!S.over)setSpeed(speed?0:1);
+  if(p.apretado(8))alternarMision();
+  if(p.apretado(11))alternarRadar();
+};
 // ======================= AMBIENTE =======================
 const C=(r,g,b)=>new THREE.Color(r,g,b);
 function updateEnv(){
@@ -990,7 +1162,9 @@ let last=performance.now(),uiT=0,slowT=0;
 function loop(now){
   const dt=Math.min(.1,(now-last)/1000);last=now;clockT+=dt;
   if(speed&&!S.over){let hrs=dt*speed/HOUR_SEC;while(hrs>0){const h=Math.min(.25,hrs);step(h);hrs-=h}}
-  updateCamera(dt);updateGhost();updateEnv();
+  updateCamera(dt);
+  if(usandoMando){mouse.set(0,0);ray.setFromCamera(mouse,camera);hoverCell=groundCell()} // con el control se apunta con la mira del centro
+  updateGhost();updateEnv();
   // animaciones
   for(const m of S.mods){const a=m.obj;const g=Math.min(1,(clockT-m.born)/.7);a.scale.y=g<1?.02+.98*(1-Math.pow(1-g,3)):1;
     const md=a.userData.model.userData;if(md.bit&&m.on&&m.powered&&!S.shelter)md.bit.rotation.y+=dt*6;
@@ -1001,15 +1175,114 @@ function loop(now){
   const pa=dustGeo.attributes.position;if(S.dust){for(let k=0;k<pa.count;k++){let x=pa.getX(k)+dt*14;if(x>80)x-=160;pa.setX(k,x)}pa.needsUpdate=true;dust.position.set(camS.tx,0,camS.tz)}
   renderer.render(scene,camera);updateMarkers();
   uiT+=dt;if(uiT>.25){uiT=0;renderStats();if(showEnergy&&!sel&&!tool)renderInfo();
-    const hint=$('#hint');if(tool==='demoler'){hint.hidden=false;hint.textContent='Desarmar: clic en una estructura'}else if(protTool==='shield'){hint.hidden=false;hint.textContent='Blindaje: clic en una cúpula'}else if(tool){hint.hidden=false;hint.textContent=ghostRes&&!ghostRes.ok?ghostRes.why:'Clic para construir · R rota · clic derecho cancela'}else hint.hidden=true}
-  slowT+=dt;if(slowT>1){slowT=0;checkMissions();renderGoals();if(sel&&!demolishArm)renderInfo();if(cat)renderTray()}
+    // El texto de ayuda cambia según se juegue con mouse/teclado o con el control de Xbox
+    const hint=$('#hint'),elegir=usandoMando?'A sobre la mira':'clic';
+    if(tool==='demoler'){hint.hidden=false;hint.textContent='Desarmar: '+elegir+' en una estructura'}
+    else if(protTool==='shield'){hint.hidden=false;hint.textContent='Blindaje: '+elegir+' en una cúpula'}
+    else if(tool){hint.hidden=false;hint.textContent=ghostRes&&!ghostRes.ok?ghostRes.why:usandoMando?'A construye · X rota · B cancela · cruceta ↑↓ forma':'Clic para construir · R rota · clic derecho cancela'}
+    else hint.hidden=true}
+  slowT+=dt;if(slowT>1){slowT=0;checkMissions();if(verLista&&misionVisible&&!$('#mision').classList.contains('cumplida'))renderMision();if(sel&&!demolishArm)renderInfo();if(cat)renderTray()}
   requestAnimationFrame(loop);
 }
-// arranque
-newGame();resize();placeCamera();makeThumbs();renderCats();renderGoals();step(.01);renderStats();
-$('#loading').remove();$('#intro').hidden=false;
+// arranque: el juego empieza corriendo y el perro presenta la primera misión
+newGame();resize();placeCamera();makeThumbs();construirStats();renderCats();step(.01);renderStats();
+$('#loading').hidden=true;setSpeed(1);
+setTimeout(anunciarMision,1400);
 window.__hab={get S(){return S},camS,cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
 requestAnimationFrame(loop);
+}
+</script>
+<script>
+/* =====================================================================
+   FLUJO DE LA APLICACIÓN: START_MENU → PLAYING
+   + sondeo automático del control de Xbox 360 (Gamepad API)
+   ===================================================================== */
+(function(){
+const $=s=>document.querySelector(s);
+let estado='START_MENU';
+
+// ---- Estrellas del menú (del Start menu original) ----
+const c=$('#sm-estrellas'),x=c.getContext('2d');let estrellas=[],dibujando=true;
+function tam(){const d=window.devicePixelRatio||1;c.width=innerWidth*d;c.height=innerHeight*d;x.setTransform(d,0,0,d,0,0);estrellas=[];for(let i=0;i<260;i++)estrellas.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.1+.2,p:Math.random()*6.28,s:.5+Math.random()*1.5})}
+function dibujar(t){if(!dibujando)return;x.clearRect(0,0,innerWidth,innerHeight);for(const s of estrellas){x.globalAlpha=.35+.45*Math.abs(Math.sin(t/1000*s.s*.4+s.p));x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill()}
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches)requestAnimationFrame(dibujar)}
+tam();addEventListener('resize',()=>{if(estado==='START_MENU'){tam();dibujar(0)}});requestAnimationFrame(dibujar);
+
+// ---- Navegación del menú (mouse, flechas + Enter, control) ----
+const botones=[...document.querySelectorAll('#sm-menu .sm-btn')];let i=0;
+function sel(n){i=(n+botones.length)%botones.length;botones.forEach((e,k)=>e.classList.toggle('on',k===i));botones[i].focus({preventScroll:true})}
+botones.forEach((e,k)=>{e.addEventListener('mouseenter',()=>sel(k));e.addEventListener('click',()=>accion(e.dataset.act))});
+addEventListener('keydown',e=>{
+  if(estado!=='START_MENU')return;
+  if(!$('#learn').hidden||!$('#opciones').hidden||!$('#adios').hidden){if(e.key==='Escape'){cerrarModales()}return}
+  if(e.key==='ArrowDown'){e.preventDefault();sel(i+1)}else if(e.key==='ArrowUp'){e.preventDefault();sel(i-1)}else if(e.key==='Enter'){e.preventDefault();accion(botones[i].dataset.act)}
+});
+function cerrarModales(){$('#learn').hidden=true;$('#opciones').hidden=true;$('#adios').hidden=true;botones[i].focus({preventScroll:true})}
+$('#learnClose').onclick=()=>$('#learn').hidden=true;
+$('#learn').onclick=e=>{if(e.target.id==='learn')$('#learn').hidden=true};
+$('#opcionesCerrar').onclick=()=>$('#opciones').hidden=true;
+$('#opciones').onclick=e=>{if(e.target.id==='opciones')$('#opciones').hidden=true};
+$('#adiosVolver').onclick=cerrarModales;
+
+function accion(a){
+  if(a==='jugar')jugar();
+  else if(a==='expedicion')location.href='expedicion.html';
+  else if(a==='aprende')$('#learn').hidden=false;
+  else if(a==='opciones')$('#opciones').hidden=false;
+  else if(a==='salir'){window.close();setTimeout(()=>{$('#adios').hidden=false},150)}
+}
+// ---- Transición limpia: fundido del menú → construcción del juego → fundido de entrada ----
+function jugar(){
+  if(estado!=='START_MENU')return;estado='CARGANDO';
+  $('#sm').classList.add('sm-saliendo');$('#loading').hidden=false;
+  setTimeout(()=>{
+    $('#juego').hidden=false;
+    iniciarJuego();
+    estado='PLAYING';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$('#juego').classList.add('visible')));
+    setTimeout(()=>{$('#sm').hidden=true;dibujando=false},800);
+  },750);
+}
+
+// ---- Control de Xbox 360: detección y configuración automática ----
+const previo={};let conectado=null;
+function nombreMando(g){return /xbox|xinput|045e/i.test(g.id)?'Control de Xbox 360':'Control'}
+function avisarMando(g){
+  const txt=g?nombreMando(g)+' conectado. Usá el stick o la cruceta y A para elegir.':'';
+  $('#sm-mando').textContent=txt;
+  $('#estadoMando').textContent=g?nombreMando(g)+' conectado y configurado ('+g.id.slice(0,60)+').':'Conectá un control de Xbox 360 por USB y apretá cualquier botón: se configura solo.';
+}
+addEventListener('gamepadconnected',e=>{conectado=e.gamepad;avisarMando(e.gamepad)});
+addEventListener('gamepaddisconnected',()=>{conectado=null;avisarMando(null)});
+let ultimo=performance.now(),repetirMenu=0;
+function sondear(t){
+  const dt=Math.min(.1,(t-ultimo)/1000);ultimo=t;
+  const pads=navigator.getGamepads?[...navigator.getGamepads()].filter(Boolean):[];
+  const g=pads[0];
+  if(g){
+    if(!conectado){conectado=g;avisarMando(g)}
+    const val=g.buttons.map(b=>typeof b==='object'?b.value:b);
+    const pres=g.buttons.map(b=>typeof b==='object'?b.pressed:b===1);
+    const ant=previo[g.index]||[];
+    const p={ejes:[g.axes[0]||0,g.axes[1]||0,g.axes[2]||0,g.axes[3]||0],botones:val,
+      algunBoton:pres.some(Boolean),apretado:n=>!!pres[n]&&!ant[n]};
+    previo[g.index]=pres;
+    if(estado==='START_MENU')mandoMenu(p,dt);
+    else if(estado==='PLAYING'&&window.manejarMandoJuego)window.manejarMandoJuego(p,dt);
+  }
+  requestAnimationFrame(sondear);
+}
+function mandoMenu(p,dt){
+  const modal=!$('#learn').hidden||!$('#opciones').hidden||!$('#adios').hidden;
+  if(modal){if(p.apretado(1)||p.apretado(0))cerrarModales();return}
+  const y=p.ejes[1];repetirMenu-=dt;
+  if(p.apretado(12)||(y<-.5&&repetirMenu<=0)){sel(i-1);repetirMenu=.25}
+  if(p.apretado(13)||(y>.5&&repetirMenu<=0)){sel(i+1);repetirMenu=.25}
+  if(Math.abs(y)<.3)repetirMenu=0;
+  if(p.apretado(0)||p.apretado(9))accion(botones[i].dataset.act);
+}
+requestAnimationFrame(sondear);
+botones[0].focus({preventScroll:true});
 })();
 </script>
 

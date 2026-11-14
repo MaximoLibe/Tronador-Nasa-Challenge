@@ -6,19 +6,33 @@ El jugador construye una base con cúpulas **semiesféricas** y **semicilíndric
 
 ## Cómo jugar
 
-Abrí `index.html` en el navegador (no hace falta instalar nada). También funciona desde GitHub Pages.
+Abrí `index.html` en el navegador (no hace falta instalar nada). También funciona desde GitHub Pages. Arranca en el **menú de inicio** (Jugar, Modo Expedición, Aprende, Opciones, Salir); el juego se construye recién al elegir **Jugar**.
 
-| Acción | Control |
-|---|---|
-| Mover la cámara | `W` `A` `S` `D` o flechas, o arrastrar con el mouse |
-| Girar la cámara | `Q` `E`, o clic derecho + arrastrar |
-| Zoom | Rueda del mouse o `Z` `X` |
-| Rotar la pieza | `R` |
-| Categorías de construcción | `1` a `8` |
-| Cancelar | `Esc` o clic derecho |
-| Pausa | `Espacio` |
+Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego lo detecta solo al apretar cualquier botón, sin configurar nada. Con el control aparece una mira en el centro de la pantalla para apuntar.
+
+| Acción | Teclado y mouse | Control Xbox 360 |
+|---|---|---|
+| Mover la cámara | `W` `A` `S` `D` o flechas, o arrastrar | Stick izquierdo |
+| Girar / inclinar la cámara | `Q` `E`, o clic derecho + arrastrar | Stick derecho |
+| Zoom | Rueda del mouse o `Z` `X` | `RT` acercar · `LT` alejar |
+| Construir / seleccionar | Clic izquierdo | `A` |
+| Cancelar / volver | `Esc` o clic derecho | `B` |
+| Rotar la pieza | `R` | `X` |
+| Modo desarmar | `0` | `Y` |
+| Categorías del dock | `1` a `8` · `9` radar | `LB` `RB` |
+| Elegir construcción | Clic en la tarjeta | Cruceta ← → |
+| Semiesfera / semicilindro | Botones de la bandeja | Cruceta ↑ ↓ |
+| Radar de hielo | `9` | `R3` (apretar el stick derecho) |
+| Mostrar la misión | `O` | `Back` |
+| Pausa | `Espacio` | `Start` |
 
 Un sol (día marciano) dura 10 minutos de juego a velocidad ×1.
+
+## Interfaz
+
+- **Barra superior:** 8 indicadores circulares en vivo (Agua, Oxígeno, Alimentos, Energía, Protección, Cordura, Salud, Gastos) y, a la derecha, reloj, clima, velocidad del tiempo y Objetivos.
+- **Dock inferior:** Hábitat, Energía, Oxígeno, Agua, Alimentos, Salud, Protección y Comunicaciones; separados, Radar y Desarmar.
+- **Misiones:** un perro astronauta aparece arriba a la derecha con cada misión nueva y se va al cumplirla o al cerrarlo.
 
 ## Mecánicas
 
