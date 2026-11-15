@@ -1,4 +1,4 @@
-# Misión Hábitat Marte
+# ARCADIA
 
 Simulador 3D de gestión de un hábitat en Marte para chicos de 7 a 12 años, hecho por el equipo **Tronador** para el desafío [Build a Junior Astronaut Mission Trainer](https://www.spaceappschallenge.org/2026/challenges/junior-astronaut-mission-trainer/) del NASA Space Apps Challenge 2026.
 
@@ -39,6 +39,23 @@ Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego 
 Un sol (día marciano) dura 10 minutos de juego a velocidad ×1. Al terminar la carga de cada misión aparece una guía con los controles (teclado o control) y en el HUD hay íconos con la tecla o el botón de cada acción.
 
 **Construcción:** cada estructura puede quedar hasta a 3 cuadraditos de la base; las cúpulas alineadas se unen solas con túneles largos. Todo (también la base inicial) se puede mover, rotar o desarmar. Antes de edificar aparece «¿Estás seguro?». En Modo libre construir no cuesta presupuesto. Las estadísticas de arriba se agrupan en **VIVIENDA** (agua, oxígeno, alimentos, energía, protección y gastos) y el **nombre del jugador** (cordura, bienestar y salud). El panel de construcción sale desde la izquierda y la pestaña blanca **MODO CONSTRUCCIÓN** baja del recuadro de arriba a la derecha. Cada orden de construcción la cumplen tres robots humanoides que la arman en 5 segundos. Nuevos: **Hábitat de investigación** (escritorios, sillas ergonómicas, luminarias y computadoras), **tanques enormes de metano** (reemplazan a las baterías: guardan la energía que sobra como metano) y **5 tanques de gases** de 0,6 × 1,90 m (O₂, N₂, CH₄, CO₂ y CO). El Módulo de Control ya no tiene camas (la base arranca con un dormitorio). Cada módulo tiene una cámara de vigilancia afuera y, a la misma altura adentro, una pantalla que muestra el exterior en tiempo real. El reactor KRUSTY, el taladro de hielo (barrena con trípode), los muebles y las cámaras son los modelos 3D del equipo.
+
+## Novedades del PROMPT 7
+
+- **Perfil del jugador:** nombre, color del traje (blanco, azul, rojo claro, gris o rosa), pelo (negro, marrón o rubio) y sexo. La misión empieza recién cuando se eligieron las tres cosas.
+- **Personas realistas** («persona-realista.html») de ~1,05 m adentro y **traje espacial articulado** («traje-eva-articulado.html») afuera, con las mismas animaciones (caminar, trabajar, correr, dormir). Los muebles quedaron a escala de las personas y la impresora 3D es más grande.
+- **Esclusa nueva:** vestuario, puerta interior, cámara que se despresuriza unos segundos y puerta exterior. Con el traje puesto no se puede pasar al resto del hábitat. Cada boca de túnel tiene una **puerta de esclusa** que se abre sola al acercarse alguien, con sonido.
+- **Primera persona sin ver afuera:** las cúpulas se ven por dentro con las paredes del módulo de estación. Mantener **Y** (control) u **O** (teclado) cambia entre primera y tercera persona; no se atraviesan muebles, puertas cerradas ni estructuras.
+- **Mapa 6 veces más grande** y **hielo sin descubrir:** la primera misión es manejar el **rover tipo Spirit/Opportunity** desde su contenedor junto a la esclusa y encontrar el hielo con su radar.
+- **Estructuras nuevas:** reflectores LED con trípode (se encienden al anochecer y consumen de noche), antena parabólica conectada al control (con minijuego para alinearla), celda **R-SOFC** (la única forma de volver electricidad el metano guardado), decantador de plásticos (metano → polietileno), **distribuidor eléctrico** (todos los cables llegan a él y sale uno solo al hábitat) y tanques de hidrógeno (pack de 3). Se quitaron los tanques de CO₂. Los túneles también se cubren de regolito.
+- **Gases y energía:** reservas, consumo y producción del documento, panel de gases (tocá Oxígeno) y diagrama eléctrico en el panel de energía; las dos explicaciones están en «¿Cómo jugar?». Con déficit de energía sólo se construye lo que da energía.
+- **Modo corazón** en una barra horizontal: los cinco pilares (la primera vez a mano, después se encienden solos) y actividades de salud: correr en la cinta, control médico, comer, llamar a casa y **dormir hasta el sol siguiente**. Hay misiones de salud nuevas.
+- **Minijuegos sólo cuando una misión lo pide** (por ejemplo, los paneles se limpian sólo si están sucios). Al instalar un taladro hay que perforar sí o sí. Las misiones urgentes suenan con alarma y llevan un **!**. Con tormenta todos vuelven adentro y nadie puede salir.
+- **Interfaz:** redondeles con el botón o la tecla de cada parte (X/H corazón, Y/B construcción, «Mantén Y/O» cadete, LB/T estadísticas, RB/Y reloj, «Mantén Back/N» notificaciones), tope de 10 notificaciones, indicador del hábitat cuando la cámara se aleja, círculos del Cadete que coinciden con los detalles, todas las pantallas interiores muestran su cámara (y se apagan), modo libre con momento del día y **Rosario**, la perra asistente, presenta el tutorial.
+- **Explorar:** modo libre (rover muy rápido, momento del día, guardar el dron otra vez y un punto con la distancia al rover) y en los escaneos sólo la foto oficial de la NASA.
+- **Modo VR** con el celular por USB: ver [herramientas/vr/LEEME.md](herramientas/vr/LEEME.md).
+- Texturas de regolito del generador en Python, reescritas en JavaScript (regolito fino, cráteres, roca porosa y lecho agrietado).
+- Los sonidos de YouTube del documento (cables y puertas) no se pueden descargar: están sintetizados con Web Audio.
 
 ## Novedades del PROMPT 6
 
