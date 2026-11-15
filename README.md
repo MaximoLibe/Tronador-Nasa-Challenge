@@ -40,6 +40,20 @@ Un sol (día marciano) dura 10 minutos de juego a velocidad ×1. Al terminar la 
 
 **Construcción:** cada estructura puede quedar hasta a 3 cuadraditos de la base; las cúpulas alineadas se unen solas con túneles largos. Todo (también la base inicial) se puede mover, rotar o desarmar. Antes de edificar aparece «¿Estás seguro?». En Modo libre construir no cuesta presupuesto. Las estadísticas de arriba se agrupan en **VIVIENDA** (agua, oxígeno, alimentos, energía, protección y gastos) y el **nombre del jugador** (cordura, bienestar y salud). El panel de construcción sale desde la izquierda y la pestaña blanca **MODO CONSTRUCCIÓN** baja del recuadro de arriba a la derecha. Cada orden de construcción la cumplen tres robots humanoides que la arman en 5 segundos. Nuevos: **Hábitat de investigación** (escritorios, sillas ergonómicas, luminarias y computadoras), **tanques enormes de metano** (reemplazan a las baterías: guardan la energía que sobra como metano) y **5 tanques de gases** de 0,6 × 1,90 m (O₂, N₂, CH₄, CO₂ y CO). El Módulo de Control ya no tiene camas (la base arranca con un dormitorio). Cada módulo tiene una cámara de vigilancia afuera y, a la misma altura adentro, una pantalla que muestra el exterior en tiempo real. El reactor KRUSTY, el taladro de hielo (barrena con trípode), los muebles y las cámaras son los modelos 3D del equipo.
 
+## Novedades del PROMPT 6
+
+- **Tripulación viva:** el comandante y el ingeniero son bots de 0,95 m (pasan por la puerta y los túneles) que siempre están haciendo algo: trabajan en las consolas, van a reparar lo que se rompe y duermen de noche. El cadete es el jugador: en **AUTO** hace lo mismo solo; con el botón del cadete (o **C**) se lo maneja desde arriba o en **primera persona** (WASD, arrastrar para mirar, **F** / **A** para interactuar). Adentro usan ropa y afuera, traje espacial: se lo ponen al pasar por la esclusa.
+- **Túneles transitables:** abiertos por dentro, con piso y luz; la cubierta de cada cúpula se recorta donde entra un túnel.
+- **Interiores nuevos** en todas las habitaciones (consolas, racks, camas, cocina, enfermería, gimnasio, baños, radios, planta de agua…). La granja tiene 3 granjas con 2 pasillos.
+- **Modelos 3D nuevos:** el **MOXIE** (caja dorada con núcleo SOXE incandescente) en su módulo y la **impresora 3D de la NASA** (con la pieza imprimiéndose) en el hábitat de investigación.
+- **Notificaciones:** ya no hay carteles sobre la pantalla; todo va al círculo de tres rayitas de abajo a la derecha (clic o **A**; se sale con **Esc** o **B**).
+- **Tormentas:** temporizador a la izquierda de la barra superior derecha; no se puede construir mientras duran; al terminar dejan 2 o 3 reparaciones distintas de las de la tormenta anterior, que pasan a ser la **misión urgente** (+25).
+- **Minijuegos:** voces de robot en todos; el de agua ya funciona con joystick; nuevo minijuego del **taladro** que se recalienta.
+- **Bienestar** más simple, con qué es cada pilar, para qué sirve y qué necesita.
+- **Joystick:** en el detalle de cada estructura las flechas llegan a cualquier botón. Nuevo dibujo del control (líneas blancas sobre fondo negro).
+- **Base:** sin el tubo flotante; 6 tanques de metano; todo lo exterior conectado a la base con cables y lo de energía unido entre sí.
+- **Explorar:** sonido de viaje al iniciar, rugido fuerte de la entrada atmosférica y del aterrizaje, minimapa arriba a la derecha y datos abajo a la izquierda. Cada análisis del rover y cada foto del dron muestran una **foto oficial de la NASA** (imágenes sin procesar de Perseverance e Ingenuity, mars.nasa.gov/mars2020/multimedia/raw-images) con información y la fuente.
+
 ## Novedades del PROMPT 5
 
 - **Cadete** arranca con una base completa (Módulo de Control, dormitorio, hábitat de investigación, esclusa, planta de agua, MOXIE, cocina y granja) en cruz y cubierta de regolito, dos KRUSTY lejos de la base unidos por cable y un módulo solar. Sus indicadores van del 1 al 10, sin unidades. Tiene misiones nuevas: sala de ocio y enfermería, regolito, paneles solares, taladro, comunicaciones, otro KRUSTY con cable y los minijuegos.
