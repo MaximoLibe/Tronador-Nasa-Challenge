@@ -1,11 +1,13 @@
 # Terreno real del Modo Expedición
 
-Scripts de Node.js que prepararon las grillas de elevación embebidas en `expedicion.html` (bloque `<script id="terreno-real">`).
+Scripts de Node.js que prepararon las grillas de elevación embebidas en el modo Explorar de `index.html` (bloque `<script id="terreno-real">`).
 
 | Lugar | Modelo de elevación | Fuente | Centro |
 |---|---|---|---|
 | Cráter Jezero | CTX DEM 20 m/píxel (`JEZ_ctx_B_soc_008_DTM_…_20m`) | NASA Mars Trek | 18,4447° N · 77,4508° E (aterrizaje de Perseverance) |
 | Monte Sharp | HiRISE DTM 1 m/píxel (`DTEEC_001488_1750_001752_1750_U02`) | HiRISE PDS, Univ. of Arizona | 4,7803° S · 137,2833° E (borde del montículo de Gale) |
+| Monte Olimpo | MOLA MEGDR 128 píxeles/grado (463 m), `megt44n180hb.img` | NASA PDS Geosciences (`node mola.js`) | 18,65° N · 133,8° O (borde oeste de la caldera) |
+| Cráter Korolev | MOLA MEGDR 128 píxeles/grado, `megt88n090hb.img` | NASA PDS Geosciences (`node mola.js`) | 73,0° N · 165,0° E (domo de hielo) |
 | Coprates Chasma | CTX DEM 24 m/píxel (`CTX_DEM_13S293E_24mp_…`) | NASA Mars Trek | 13,7616° S · 66,5446° O (borde de la pared sur, sobre la meseta) |
 
 Pasos (los archivos se descargan en esta misma carpeta):
@@ -16,4 +18,4 @@ Pasos (los archivos se descargan en esta misma carpeta):
 4. `node armar.js` → `terreno_real.json`
 5. `node integrar.js ../../expedicion.html` (sólo sobre la versión anterior a la integración)
 
-`coprates.js vista` y `gale.js perfil` sirven para mirar los modelos y elegir otra zona. Cada grilla cubre 12 km, 3 km y (en Gale) 640 m; el juego usa la más detallada que cubra cada punto y suma sólo unos centímetros de rugosidad.
+`node mola.js armar` baja por rangos sólo las filas necesarias de MOLA (unos 19 MB, se guardan en `mola_cache/`) y escribe `mola.json`; `node mola.js vista olimpo` muestra un mapa ASCII. `coprates.js vista` y `gale.js perfil` sirven para mirar los modelos y elegir otra zona. Cada grilla cubre 12 km, 3 km y (en Gale) 640 m; el juego usa la más detallada que cubra cada punto y suma sólo unos centímetros de rugosidad.

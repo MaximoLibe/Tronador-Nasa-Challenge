@@ -6,15 +6,15 @@ El jugador construye una base con cúpulas **semiesféricas** y **semicilíndric
 
 ## Cómo jugar
 
-Abrí `index.html` en el navegador (no hace falta instalar nada; las imágenes van dentro del archivo). También funciona desde GitHub Pages. Necesita internet para el motor 3D y los mapas de NASA Mars Trek.
+Abrí `index.html` en el navegador (no hace falta instalar nada: todo, incluido el modo Explorar, las imágenes y los modelos 3D, va dentro de ese único archivo). También funciona desde GitHub Pages. Necesita internet para el motor 3D y los mapas de NASA Mars Trek.
 
-El menú sigue el diagrama `Estructura de juego.drawio`:
+Al abrirlo aparece 3 segundos la insignia de la misión **TRONADOR** y después el menú, que sigue el diagrama `Estructura de juego.drawio`. Todo el programa usa Helvética Bold y sonidos robóticos y espaciales generados por el navegador.
 
 - **Jugar**
-  - **Supervivencia:** elegís **Cadete** o **Comandante** (cambian los recursos iniciales, la frecuencia de climas extremos y los castigos) y tu astronauta. Al tocar **Iniciar misión** hay un descenso orbital sobre Arcadia Planitia con la cartografía real de Mars Trek, inspirado en la carga de mapas de Star Wars Battlefront, y un timelapse de 10 segundos en el que se arma la base.
-  - **Explorar:** abre `expedicion.html`. Al elegir un lugar (Cráter Jezero, Monte Sharp o Valles Marineris) y tocar **Iniciar exploración** se reproduce el mismo descenso orbital y después el aterrizaje del rover. En cada lugar hay una **pelota de fútbol medio enterrada** para encontrar.
+  - **Supervivencia:** en «Elige tu misión» elegís **Cadete** o **Comandante** (cambian los recursos iniciales, la frecuencia de climas extremos y los castigos) y después **Iniciar** (con las misiones del perro) o **Modo libre** (sin misiones guiadas). Tras confirmar, escribís tu nombre (con el teclado o con el teclado virtual del control): el perro asistente te llama por tu nombre. Después hay un descenso orbital sobre Arcadia Planitia con la cartografía real de Mars Trek, inspirado en la carga de mapas de Star Wars Battlefront, y un timelapse de 10 segundos en el que se arma la base.
+  - **Explorar:** un globo 3D de Marte con el mosaico real de NASA Mars Trek gira hasta cada uno de los 5 destinos (Monte Olimpo, Cráter Korolev, Cráter Jezero, Monte Sharp y Valles Marineris). Al tocar **Iniciar misión** se reproduce el mismo descenso orbital y después el aterrizaje del rover. En cada lugar hay una **pelota de fútbol medio enterrada** para encontrar.
 - **Cargar partida:** 3 ranuras guardadas en el navegador.
-- **Opciones:** idioma (español, inglés, italiano), controles (se pueden reasignar teclas y botones del control), sonido (música y efectos) y gráficos (calidad y sensibilidad de cámara). Es el mismo panel que se abre desde la pausa.
+- **Opciones:** Juego (idioma y guía al empezar), Video (calidad y sensibilidad de cámara), Audio (música y efectos) y Controles (reasignar teclas y botones). Es la misma pantalla desde el menú y desde la pausa; se vuelve con `Esc` o `B`.
 - **Créditos** y **Salir del juego**.
 
 Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego lo detecta solo al apretar cualquier botón. Con el control aparece una mira en el centro de la pantalla para apuntar. Teclas y botones por defecto:
@@ -33,9 +33,11 @@ Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego 
 | Recorrer el panel derecho | Clic | Cruceta ↑ ↓ |
 | Radar de hielo · Desarmar | `9` · `0` | Cruceta → · `Y` |
 | Mostrar la misión · Mapa de Arcadia | `O` · `M` | `Back` · `L3` |
-| Menú de pausa | `P` | `Start` |
+| Menú de pausa | `P` o `Esc` | `Start` |
 
-Un sol (día marciano) dura 10 minutos de juego a velocidad ×1.
+Un sol (día marciano) dura 10 minutos de juego a velocidad ×1. Al terminar la carga de cada misión aparece una guía con los controles (teclado o control) y en el HUD hay íconos con la tecla o el botón de cada acción.
+
+**Construcción:** el panel de construcción sale desde la izquierda y la pestaña blanca **MODO CONSTRUCCIÓN** baja del recuadro de arriba a la derecha. Cada orden de construcción la cumplen tres robots humanoides que la arman en 5 segundos. Nuevos: **Hábitat de investigación** (escritorios, sillas ergonómicas, luminarias y computadoras), **tanques enormes de metano** (reemplazan a las baterías: guardan la energía que sobra como metano) y **5 tanques de gases** de 0,6 × 1,90 m (O₂, N₂, CH₄, CO₂ y CO). El Módulo de Control ya no tiene camas (la base arranca con un dormitorio). Cada módulo tiene una cámara de vigilancia afuera y, a la misma altura adentro, una pantalla que muestra el exterior en tiempo real. El reactor KRUSTY, el taladro de hielo (barrena con trípode), los muebles y las cámaras son los modelos 3D del equipo.
 
 ## Interfaz y mecánicas
 
@@ -75,9 +77,9 @@ Encima se dibujan la base, los **sitios de impacto con hielo expuesto** y los **
 - **Comunicaciones:** retraso de 4 a 24 minutos con la Tierra. Sin antena no llegan cohetes ni avisos de tormenta.
 - **Cordura y salud** de la tripulación.
 
-## Modo Expedición (`expedicion.html`)
+## Modo Explorar (rover + dron)
 
-Un rover tipo Perseverance explora el cráter Jezero, Monte Sharp y Valles Marineris. Lleva al helicóptero **Ingenuity** guardado bajo la panza: se puede desplegar para ver cada lugar desde el aire y sacar fotos aéreas de los objetivos.
+Está dentro de `index.html` (`expedicion.html` sólo redirige ahí). Un rover tipo Perseverance explora Monte Olimpo, el Cráter Korolev, el cráter Jezero, Monte Sharp y Valles Marineris. Se juega con teclado o con el control de Xbox 360 (stick izquierdo o `RT`/`LT` para manejar, `A` analizar, `X` cámara, `Y` Ingenuity, `Start` pausa). Lleva al helicóptero **Ingenuity** guardado bajo la panza: se puede desplegar para ver cada lugar desde el aire y sacar fotos aéreas de los objetivos.
 
 | Acción | Rover | Ingenuity |
 |---|---|---|
@@ -87,7 +89,7 @@ Un rover tipo Perseverance explora el cráter Jezero, Monte Sharp y Valles Marin
 | Cámara | `C` seguimiento / Navcam | `C` seguimiento / NAV (abajo, B/N) / RTE (color) |
 | Ingenuity | `I` desplegar · `V` pasar al helicóptero | `V` volver al rover (sólo en el suelo) |
 
-**Relieve real:** el terreno de cada lugar sale de modelos de elevación medidos desde órbita, no de fórmulas inventadas: Jezero con el modelo CTX de 20 m de NASA Mars Trek (centrado en el aterrizaje de Perseverance), Monte Sharp con el modelo HiRISE de 1 m del borde del montículo de Gale y Valles Marineris con el modelo CTX de 24 m de Coprates Chasma, sobre el borde de la pared sur (13,76° S · 66,54° O), con más de 3 km de caída real hacia el cañón. Se ve hasta 12 km alrededor. Encima sólo se agrega rugosidad de centímetros. Los scripts que prepararon los datos están en `herramientas/terreno-real/`.
+**Relieve real:** el terreno de cada lugar sale de modelos de elevación medidos desde órbita, no de fórmulas inventadas: Jezero con el modelo CTX de 20 m de NASA Mars Trek (centrado en el aterrizaje de Perseverance), Monte Sharp con el modelo HiRISE de 1 m del borde del montículo de Gale Monte Olimpo y el Cráter Korolev con el altímetro láser MOLA de Mars Global Surveyor (463 m, el modelo global que muestra Mars Trek) y Valles Marineris con el modelo CTX de 24 m de Coprates Chasma, sobre el borde de la pared sur (13,76° S · 66,54° O), con más de 3 km de caída real hacia el cañón. Se ve hasta 12 km alrededor (180 km en Valles Marineris, Monte Olimpo y Korolev). Encima sólo se agrega rugosidad de centímetros. Los scripts que prepararon los datos están en `herramientas/terreno-real/`.
 
 Límites tomados del Ingenuity real: altitud máxima de 24 m (su récord), 10 m/s, unos 170 s por vuelo, rotores a 2.537 rpm y radio de 1 km con el rover. Necesita terreno plano para aterrizar. La carga solar está acelerada. Ingenuity sólo voló en Jezero (72 vuelos, 2021–2024); en los otros lugares el vuelo es una simulación. Fuentes: Wikipedia, artículos *Ingenuity (helicopter)* y *Perseverance (rover)*.
 
