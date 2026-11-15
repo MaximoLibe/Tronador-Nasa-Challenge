@@ -2179,7 +2179,7 @@ function reproducir(o){
   raiz.querySelector('[data-d=nombre]').textContent=o.nombre;raiz.querySelector('[data-d=sub]').textContent=o.sub||'';
   eRotulo.style.opacity=0;eRotulo.style.transform='translateY(10px)';raiz.style.display='block';raiz.style.opacity=1;
   // precargar los mosaicos del zoom final
-  for(let z=3;z<=8;z++){const W=2**(z+1),H=2**z,c=Math.floor((o.lon+180)/360*W),r=Math.floor((90-o.lat)/180*H);for(let dy=-1;dy<=1;dy++)for(let dx=-2;dx<=2;dx++)tile(z,Math.max(0,Math.min(H-1,r+dy)),((c+dx)%W+W)%W)}
+  for(let z=3;z<=7;z++){const W=2**(z+1),H=2**z,c=Math.floor((o.lon+180)/360*W),r=Math.floor((90-o.lat)/180*H);for(let dy=-1;dy<=1;dy++)for(let dx=-2;dx<=2;dx++)tile(z,Math.max(0,Math.min(H-1,r+dy)),((c+dx)%W+W)%W)}
   if(window.Sonido)Sonido.efecto('descenso');
   requestAnimationFrame(cuadro);
 }
