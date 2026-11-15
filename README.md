@@ -21,23 +21,24 @@ Se juega con teclado y mouse o con un **control de Xbox 360 por USB**: el juego 
 
 | Acción | Teclado y mouse | Control Xbox 360 |
 |---|---|---|
-| Mover la cámara | `W` `A` `S` `D` o flechas, o arrastrar | Stick izquierdo |
+| Moverse por el mapa | `W` `A` `S` `D` o flechas, o arrastrar | Stick izquierdo |
 | Girar / inclinar la cámara | `Q` `R`, o clic derecho + arrastrar | Stick derecho |
 | Zoom | Rueda del mouse o `Z` `X` | `RT` acercar · `LT` alejar |
-| Construir / seleccionar | Clic izquierdo | `A` |
-| Cancelar / volver | `Esc` o clic derecho | `B` |
-| Rotar el objeto | `E` | `X` |
-| Modo construcción (casco) | `B` | `R3` |
-| Bienestar del astronauta (corazón) | `H` | Cruceta ← |
-| Categorías de construcción | `1` a `8` | `LB` `RB` |
-| Recorrer el panel derecho | Clic | Cruceta ↑ ↓ |
-| Radar de hielo · Desarmar | `9` · `0` | Cruceta → · `Y` |
-| Mostrar la misión · Mapa de Arcadia | `O` · `M` | `Back` · `L3` |
+| Confirmar (Enter) | `Enter` o clic izquierdo | `A` |
+| Cancelar (Esc) | `Esc` o clic derecho | `B` |
+| Modo construcción (casco) | `B` | `Y` |
+| Modo corazón (bienestar) | `H` | `X` |
+| Rotar el objeto | `E` | `LB` / `RB` |
+| Detalle resumido del objeto elegido | `Y` | `Y` (en construcción, con un objeto elegido) |
+| Mover / rotar una construcción | `G` o botón «Mover» | Mantener `A` sobre ella |
+| Desarmar | `0` o `Supr` | Mantener `Y` sobre ella |
+| Elegir botones del HUD (estadísticas, pausa, ×1 ×3 ×10, Objetivos, paneles) | Clic | Cruceta ↑ ↓ ← → (sólo mueve el foco) + `A` |
+| Radar de hielo · Mostrar la misión · Mapa | `9` · `O` · `M` | `R3` · `Back` · `L3` |
 | Menú de pausa | `P` o `Esc` | `Start` |
 
 Un sol (día marciano) dura 10 minutos de juego a velocidad ×1. Al terminar la carga de cada misión aparece una guía con los controles (teclado o control) y en el HUD hay íconos con la tecla o el botón de cada acción.
 
-**Construcción:** el panel de construcción sale desde la izquierda y la pestaña blanca **MODO CONSTRUCCIÓN** baja del recuadro de arriba a la derecha. Cada orden de construcción la cumplen tres robots humanoides que la arman en 5 segundos. Nuevos: **Hábitat de investigación** (escritorios, sillas ergonómicas, luminarias y computadoras), **tanques enormes de metano** (reemplazan a las baterías: guardan la energía que sobra como metano) y **5 tanques de gases** de 0,6 × 1,90 m (O₂, N₂, CH₄, CO₂ y CO). El Módulo de Control ya no tiene camas (la base arranca con un dormitorio). Cada módulo tiene una cámara de vigilancia afuera y, a la misma altura adentro, una pantalla que muestra el exterior en tiempo real. El reactor KRUSTY, el taladro de hielo (barrena con trípode), los muebles y las cámaras son los modelos 3D del equipo.
+**Construcción:** cada estructura puede quedar hasta a 3 cuadraditos de la base; las cúpulas alineadas se unen solas con túneles largos. Todo (también la base inicial) se puede mover, rotar o desarmar. Antes de edificar aparece «¿Estás seguro?». En Modo libre construir no cuesta presupuesto. Las estadísticas de arriba se agrupan en **VIVIENDA** (agua, oxígeno, alimentos, energía, protección y gastos) y el **nombre del jugador** (cordura, bienestar y salud). El panel de construcción sale desde la izquierda y la pestaña blanca **MODO CONSTRUCCIÓN** baja del recuadro de arriba a la derecha. Cada orden de construcción la cumplen tres robots humanoides que la arman en 5 segundos. Nuevos: **Hábitat de investigación** (escritorios, sillas ergonómicas, luminarias y computadoras), **tanques enormes de metano** (reemplazan a las baterías: guardan la energía que sobra como metano) y **5 tanques de gases** de 0,6 × 1,90 m (O₂, N₂, CH₄, CO₂ y CO). El Módulo de Control ya no tiene camas (la base arranca con un dormitorio). Cada módulo tiene una cámara de vigilancia afuera y, a la misma altura adentro, una pantalla que muestra el exterior en tiempo real. El reactor KRUSTY, el taladro de hielo (barrena con trípode), los muebles y las cámaras son los modelos 3D del equipo.
 
 ## Interfaz y mecánicas
 
@@ -79,7 +80,7 @@ Encima se dibujan la base, los **sitios de impacto con hielo expuesto** y los **
 
 ## Modo Explorar (rover + dron)
 
-Está dentro de `index.html` (`expedicion.html` sólo redirige ahí). Un rover tipo Perseverance explora Monte Olimpo, el Cráter Korolev, el cráter Jezero, Monte Sharp y Valles Marineris. Se juega con teclado o con el control de Xbox 360 (stick izquierdo o `RT`/`LT` para manejar, `A` analizar, `X` cámara, `Y` Ingenuity, `Start` pausa). Lleva al helicóptero **Ingenuity** guardado bajo la panza: se puede desplegar para ver cada lugar desde el aire y sacar fotos aéreas de los objetivos.
+Está dentro de `index.html`, en la misma página (sin marcos ni archivos aparte; `expedicion.html` sólo redirige ahí). Un rover tipo Perseverance explora Monte Olimpo, el Cráter Korolev, el cráter Jezero, Monte Sharp y Valles Marineris. Se juega con teclado o con el control de Xbox 360 (stick izquierdo o `RT`/`LT` para manejar, `A` analizar, `X` cámara, `Y` Ingenuity, `Start` pausa). Lleva al helicóptero **Ingenuity** guardado bajo la panza: se puede desplegar para ver cada lugar desde el aire y sacar fotos aéreas de los objetivos.
 
 | Acción | Rover | Ingenuity |
 |---|---|---|
