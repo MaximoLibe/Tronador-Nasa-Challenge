@@ -3979,7 +3979,11 @@ function ponerCamaraYPantalla(g,type,sh,fantasma,regolito){
   const cam=camaraTpl.clone();cam.scale.setScalar(.11);
   // la placa de pared del modelo mira a +z: se orienta hacia afuera
   const rx=rExt+(regolito?.12:.02);cam.position.set(px+dx*rx,Y,dz*rx);cam.lookAt(px+dx*10,Y,dz*10);cam.translateZ(.27);g.add(cam);g.userData.camVig=cam;
-  const ojo=new THREE.Object3D();ojo.position.set(px+dx*(rExt+.75),Y+.05,dz*(rExt+.75));ojo.lookAt(px+dx*20,Y-1.2,dz*20);g.add(ojo);g.userData.ojo=ojo;
+  const ojo=new THREE.Object3D();g.add(ojo);g.userData.ojo=ojo;
+  // ubicar la cámara de afuera en otro lado de la pared (para no filmar un túnel o una puerta pegados)
+  const ubicar=(a,x0)=>{const dx=Math.cos(a),dz=Math.sin(a);cam.position.set(x0+dx*rx,Y,dz*rx);cam.lookAt(x0+dx*10,Y,dz*10);cam.translateZ(.27);
+    ojo.position.set(x0+dx*(rExt+.75),Y+.05,dz*(rExt+.75));ojo.lookAt(x0+dx*20,Y-1.2,dz*20)};
+  ubicar(a,px);g.userData.vig={ubicar,cand:esf?[0,1,2,3,4,5].map(k=>[a+k*Math.PI/3,0]):[[Math.PI/2,-1.2],[-Math.PI/2,-1.2],[Math.PI/2,1.2],[-Math.PI/2,1.2],[Math.PI/2,0],[-Math.PI/2,0]]};
   if(fantasma)return;
   // pantalla interior a la misma altura, mirando al centro del módulo
   const forma=PANT_FORMAS[Object.keys(DEF).indexOf(type)%PANT_FORMAS.length],ri=rExt-.14;
@@ -5706,12 +5710,12 @@ const _vp=new THREE.Vector3();
 function updateInteriores(tt){
   // en primera persona las paredes nunca se transparentan: afuera se ve la cubierta entera y adentro el forro interior
   const cfp=modoCadete==='fp'&&typeof cadete==='function'?cadete():null,adentro=!cfp||!cfp.fuera;
-  for(const m of S.mods){const md=m.obj.userData.model.userData;if(!md.cascos)continue;
+  for(const m of S.mods){const md=m.obj.userData.model.userData;if(!md.cascos)continue;if(md.__desp!==puertasVer)despejarPuertas(m);
     _vp.copy(m.obj.position);const d=camera.position.distanceTo(_vp);
     const fpm=modoCadete==='fp',vis=fpm?0:d<17?1:d<27?(27-d)/10:0;m.obj.userData.vis=fpm?(d<30?1:0):vis;m.obj.userData.dist=d;
     for(const mat of md.cascos){const op0=mat.userData.op0??1;const o=op0*(1-.85*vis);if(Math.abs(mat.opacity-o)>.01){mat.opacity=o;mat.depthWrite=o>.95}}
     // primera persona: la cubierta se esconde y se ve el forro interior (sin regolito ni paisaje)
-    if(md.forro){const f=fpm&&d<30&&adentro;if(md.forro.visible!==f){md.forro.visible=f;(md.cascoMeshes||[]).forEach(o=>o.visible=!f)}}
+    if(md.forro){const f=fpm&&d<30&&adentro;if(md.forro.visible!==f){md.forro.visible=f;(md.cascoMeshes||[]).forEach(o=>o.visible=!f&&!o.userData.tapada)}}
     if(md.interior){const ver=fpm?d<30:vis>.01;md.interior.visible=ver;const an=md.interior.userData.anim;if(an&&d<45&&ver)an(tt)}}
   updateTuneles();
 }
@@ -5892,7 +5896,7 @@ function escaleraEsclusa(pu){
   // pasamanos a los dos costados
   const z0=base-.15,z1=base+.05+PROF*N,y0=ALTO+.9,y1=.9;
   for(const sx of[-1,1]){const x=sx*(ANCHO/2+.03);caja(.04,y0,.04,escMat.riel,x,y0/2,z0);caja(.04,y1,.04,escMat.riel,x,y1/2,z1);
-    const L=Math.hypot(z1-z0,y0-y1),r=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,L,8),escMat.riel);r.position.set(x,(y0+y1)/2,(z0+z1)/2);r.rotation.x=Math.atan2(z1-z0,y0-y1);r.castShadow=true;g.add(r)}
+    const L=Math.hypot(z1-z0,y0-y1),r=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,L,8),escMat.riel);r.position.set(x,(y0+y1)/2,(z0+z1)/2);r.rotation.x=Math.atan2(z1-z0,y1-y0);r.castShadow=true;g.add(r)}
   // baliza verde arriba de la entrada
   const yL=pu.curva?1.25:1.75,zL=pu.curva?Math.sqrt(1.9*1.9-(yL-.24)**2)+.04:base-.12;caja(.22,.06,.06,escMat.luz,0,yL,zL);
 }
@@ -5947,17 +5951,43 @@ function rutaHacia(P,dest){
 }
 /* ---------- Puertas: en cada boca de túnel y las dos de la esclusa ---------- */
 const PUERTAS=[];
+let puertasVer=0;const TAPADAS=[];
+// Esconde lo que cruza el paso de una puerta: desde la abertura hasta 1,2 m adentro, 85 cm de ancho y a la altura de una persona
+function despejarPuertas(m){
+  const md=m.obj.userData.model&&m.obj.userData.model.userData;if(!md||md.__desp===puertasVer)return;md.__desp=puertasVer;
+  try{orientarCamara(m)}catch(e){console.warn(e)}
+  const ps=PUERTAS.filter(P=>P.m===m);if(!ps.length)return;m.obj.updateMatrixWorld(true);
+  const caja=new THREE.Box3(),c=m.obj.position;
+  m.obj.userData.model.traverse(o=>{if(!o.isMesh||o.userData.esPuerta)return;if(md.forro&&(o===md.forro||o.parent===md.forro))return;
+    caja.setFromObject(o);const t=caja.getSize(new THREE.Vector3());if(Math.max(t.x,t.y,t.z)>2.6||t.y<.05&&caja.max.y<PISO+.1)return;
+    for(const P of ps){const adentro=Math.sign(c.clone().sub(P.pos).dot(P.n))||1,lat=new THREE.Vector3(-P.n.z,0,P.n.x);
+      const ctr=caja.getCenter(new THREE.Vector3()).sub(P.pos),u=ctr.dot(P.n)*adentro,l=Math.abs(ctr.dot(lat));
+      const mu=Math.abs(t.x*P.n.x)+Math.abs(t.z*P.n.z),ml=Math.abs(t.x*lat.x)+Math.abs(t.z*lat.z);
+      if(u+mu/2>-.3&&u-mu/2<1.2&&l-ml/2<.42&&caja.max.y>PISO+.1&&caja.min.y<PISO+1.9){o.userData.tapada=true;o.visible=false;TAPADAS.push(o);break}}});
+}
+// Cada cámara de vigilancia mira hacia donde no tenga nada pegado delante (prueba varios lugares de la pared)
+const _rcVig=new THREE.Raycaster();
+function orientarCamara(m){
+  const md=m.obj.userData.model.userData,V=md.vig;if(!V||!md.ojo)return;
+  const objs=[];scene.traverse(o=>{if(o.isMesh&&o.visible)objs.push(o)});const propio=o=>{while(o){if(o===md.camVig)return true;o=o.parent}return false};
+  const cam=new THREE.PerspectiveCamera(70,16/9,.1,10);let mejor=null;
+  for(const[a,x0]of V.cand){V.ubicar(a,x0);m.obj.updateMatrixWorld(true);md.ojo.getWorldPosition(cam.position);md.ojo.getWorldQuaternion(cam.quaternion);cam.rotateY(Math.PI);cam.updateMatrixWorld(true);
+    let pts=0;for(const[x,y]of[[0,0],[-.7,0],[.7,0],[0,.5],[-.5,-.5],[.5,-.5]]){_rcVig.setFromCamera(new THREE.Vector2(x,y),cam);_rcVig.far=4;const h=_rcVig.intersectObjects(objs,false).find(h=>!propio(h.object));pts+=h?h.distance:4}
+    if(!mejor||pts>mejor.pts+.01)mejor={a,x0,pts}}
+  V.ubicar(mejor.a,mejor.x0);m.obj.updateMatrixWorld(true);
+}
 function armarPuertas(){
+  for(const o of TAPADAS){o.userData.tapada=false;o.visible=true}TAPADAS.length=0;puertasVer++;
   PUERTAS.length=0;ESC=null;if(!window.Modelos7)return;
   const pon=(pos,eje,tipo,extra)=>{const d=Modelos7.puerta({ancho:.62,alto:.98});d.g.position.set(pos.x,PISO+.02,pos.z);d.g.rotation.y=eje==='x'?Math.PI/2:0;connRoot.add(d.g);
     const n=eje==='x'?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1);const P={d,pos:pos.clone(),n,tipo,ultimo:0,...extra};PUERTAS.push(P);return P};
   for(const tu of tuneles){for(const m of[tu.da,tu.db]){const c=m.obj.position,ax=tu.eje==='x'?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1);
     const fin=tu.a.distanceTo(c)<tu.b.distanceTo(c)?tu.a:tu.b,sg=Math.sign(fin.clone().sub(c).dot(ax))||1;
     const larga=m.shape!=='esfera'&&(tu.eje==='x'?!m.rot:!!m.rot);const s=larga?2.84:1.62;
-    const pos=fin.clone();if(tu.eje==='x')pos.x=c.x+sg*s;else pos.z=c.z+sg*s;pon(pos,tu.eje,'tunel')}}
+    const pos=fin.clone();if(tu.eje==='x')pos.x=c.x+sg*s;else pos.z=c.z+sg*s;pon(pos,tu.eje,'tunel',{m})}}
   const pu=puertaEsclusa();if(!pu)return;
   const eje=Math.abs(pu.v.x)>.5?'x':'z';
-  const ext=pon(pu.pExt,eje,'ext'),int=pon(pu.pInt,eje,'int');
+  const ext=pon(pu.pExt,eje,'ext',{m:pu.e}),int=pon(pu.pInt,eje,'int',{m:pu.e});
   ESC={pu,ext,int,estado:'pres',t:0,aviso:''};
   escaleraEsclusa(pu);
   // tabique con hueco de puerta entre la cámara y el vestuario
@@ -6060,7 +6090,7 @@ function updateTripulacion(dt){
   const k=S.over?0:Math.min(3,speed||0),dtj=dt*k;
   for(const P of PJ){
     const manual=P.id==='cadete'&&modoCadete!=='auto'&&!P.forzado&&!P.actividad;
-    P.g.visible=!(P.id==='cadete'&&modoCadete==='fp'&&!P.actividad)&&!(P.id==='cadete'&&modoRover);
+    P.g.visible=!(P.id==='cadete'&&modoCadete==='fp'&&!P.actividad)&&!(P.id==='cadete'&&modoRover)&&!(modoCadete==='fp'&&P.id!=='cadete'&&Math.hypot(P.g.position.x-camera.position.x,P.g.position.z-camera.position.z)<.5);
     revisarTraje(P,dt);
     if(manual){continue}
     // tormenta: los que están afuera vuelven solos al hábitat
@@ -6087,6 +6117,15 @@ function updateTripulacion(dt){
     if(P.estado==='hacer'){P.t-=dtj;P.g.rotation.set(0,P.yaw,0);animarPersona(P,dtj,P.actividad==='cinta'?'correr':P.fuera?'muestra':'trabajar');
       if(P.t<=0){if(P.actividad)terminarActividad(P);P.estado='pensar';P.t=.5+Math.random()*2;P.lugar=null}}
   }
+  separarTripulacion();
+}
+// Dos personas nunca ocupan el mismo lugar: si quedan a menos de 45 cm se corren un poco (el cadete manejado a mano no se mueve)
+function separarTripulacion(){
+  const quieto=P=>P.estado==='dormir'||(P.id==='cadete'&&modoCadete!=='auto');
+  for(let i=0;i<PJ.length;i++)for(let j=i+1;j<PJ.length;j++){const A=PJ[i],B=PJ[j];if(A.estado==='dormir'||B.estado==='dormir')continue;
+    const a=A.g.position,b=B.g.position;if(Math.abs(a.y-b.y)>.3)continue;let dx=b.x-a.x,dz=b.z-a.z,d=Math.hypot(dx,dz);if(d>=.45)continue;
+    if(d<1e-3){dx=1;dz=0;d=1}const falta=(.45-Math.max(d,1e-3))/2,ux=dx/d,uz=dz/d,qa=quieto(A),qb=quieto(B);if(qa&&qb)continue;
+    const fa=qa?0:qb?2:1,fb=qb?0:qa?2:1;a.x-=ux*falta*fa;a.z-=uz*falta*fa;b.x+=ux*falta*fb;b.z+=uz*falta*fb}
 }
 function lugaresBase(m){return m.shape==='esfera'?[[-.95,-.95],[.95,-.95],[-.95,.95],[.95,.95]].map(([x,z])=>Math.atan2(-x,-z)):[0,0,Math.PI,Math.PI,Math.PI/2,-Math.PI/2]}
 /* ---------- Actividades de salud del cadete: correr en la cinta, dormir, control médico y comer ---------- */
@@ -6271,7 +6310,7 @@ function ponerClima(on){S.climaOn=on;
   else{S.climaHoras=18+rnd()*24;programarTormenta();toast('Clima activado: vuelven las ventiscas, los tornados y las tormentas solares.','')}
   pintarClimaBtn();renderStats();renderInfo()}
 Ajustes.alCambiar(()=>{construirStats();renderStats();renderCats();if(panelTipo)renderPanelDer();if(misionVisible)renderMision();renderInfo();if(!$('#pausa').hidden)renderPausa();aplicarCalidad();pintarIconosHud()});
-window.__hab={get scene(){return scene},get camera(){return camera},ver:m=>{sel=m;showEnergy=false;renderInfo()},pasoTut:k=>{tutorial={k,alTerminar:null,prev:1};$('#tutorial').hidden=false;pasoTutorial()},get ESC(){return ESC},get PUERTAS(){return PUERTAS},manejarRover,hacerActividad,get modoRover(){return modoRover},cambiarModalidad,moverCadete,get PJ(){return PJ},setModoCadete,get modoCadete(){return modoCadete},get notifs(){return notifs},abrirNotifs,cerrarNotifs,get tuneles(){return tuneles},get S(){return S},get tutorial(){return tutorial},sigTutorial,finTutorial,abrirMinijuego,get MJ(){return MJ},verDentroGranja,salirGranja,dañosTormenta,camS,saltarIntro,get guia(){return guia},abrirPausa,construirConRobots,addMod:(...a)=>{const m=addMod(...a);rebuildConnectors();return m},cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
+window.__hab={get scene(){return scene},get camera(){return camera},get renderer(){return renderer},feedDe:m=>feedDe(m),ver:m=>{sel=m;showEnergy=false;renderInfo()},pasoTut:k=>{tutorial={k,alTerminar:null,prev:1};$('#tutorial').hidden=false;pasoTutorial()},get ESC(){return ESC},get PUERTAS(){return PUERTAS},manejarRover,hacerActividad,get modoRover(){return modoRover},cambiarModalidad,moverCadete,get PJ(){return PJ},setModoCadete,get modoCadete(){return modoCadete},get notifs(){return notifs},abrirNotifs,cerrarNotifs,get tuneles(){return tuneles},get S(){return S},get tutorial(){return tutorial},sigTutorial,finTutorial,abrirMinijuego,get MJ(){return MJ},verDentroGranja,salirGranja,dañosTormenta,camS,saltarIntro,get guia(){return guia},abrirPausa,construirConRobots,addMod:(...a)=>{const m=addMod(...a);rebuildConnectors();return m},cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
 requestAnimationFrame(loop);
 }
 </script>
