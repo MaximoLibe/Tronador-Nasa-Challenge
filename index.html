@@ -641,7 +641,14 @@ button.tecla .bi{pointer-events:none}
 #opciones{background:rgba(0,0,0,.18)}
 #opciones .op-caja{top:auto;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:clamp(20px,3.5vw,44px);transform:none;max-height:calc(100% - 56px)}
 #opciones .op-titulo,#opciones .op-cats .pz-op.dentro,#opciones .op-sub{color:#fff}
-#opciones .op-panel{background:transparent;border:0;border-radius:0;padding:2px 0;box-shadow:none}
+#opciones .op-panel{background:transparent;border:0;border-radius:0;padding:2px 14px 2px 0;box-shadow:none}
+/* Opciones: la caja tiene siempre el mismo alto (no salta al cambiar de pestaña) y sólo el panel de la derecha se desplaza */
+#opciones{overflow:hidden}
+#opciones .op-caja{height:min(620px,calc(100% - 56px))}
+#opciones .op-cuerpo{flex:1;min-height:0}
+#opciones .op-cats{align-self:start}
+#opciones .op-panel{height:100%;max-height:none;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.6) rgba(255,255,255,.08)}
+#opciones .op-panel::-webkit-scrollbar{width:8px}#opciones .op-panel::-webkit-scrollbar-track{background:rgba(255,255,255,.08);border-radius:4px}#opciones .op-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.6);border-radius:4px}#opciones .op-panel::-webkit-scrollbar-button{display:none;height:0}
 #opciones .op-panel .op-fila{border-bottom:1px solid rgba(255,255,255,.22);border-radius:0}
 #opciones .op-panel .op-fila.foco{background:rgba(255,255,255,.12);box-shadow:inset 3px 0 0 #fff}
 #opciones .op-fila label,#opciones .op-nota,#opciones .op-desc{color:#fff}
@@ -6551,7 +6558,9 @@ const desc=()=>t('opDesc_'+CATS[cat]);
 function abrir(cb){alCerrar=cb||null;abierto=true;cat=0;nivel='cats';fila=0;capt=null;$('#opciones').hidden=false;render();Sonido.efecto('ok')}
 function cerrar(){if(!abierto)return;abierto=false;capt=null;window.__capturandoTecla=false;$('#opciones').hidden=true;Sonido.efecto('atras');const f=alCerrar;alCerrar=null;f&&f()}
 function filas(){return[...$('#opCuerpo').querySelectorAll('[data-fila]')]}
+let catPintada=-1;
 function render(){
+  if(catPintada!==cat){catPintada=cat;const p=document.querySelector('#opciones .op-panel');if(p)p.scrollTop=0}
   $('#opCats').innerHTML=CATS.map((c,k)=>`<button class="pz-op${k===cat?' on':''}${nivel==='filas'&&k===cat?' dentro':''}" data-c="${k}">${t('opCat_'+c)}</button>`).join('');
   $('#opCats').querySelectorAll('[data-c]').forEach(b=>{b.onmouseenter=()=>{if(nivel==='cats'&&cat!==+b.dataset.c){cat=+b.dataset.c;render();Sonido.efecto('nav')}};b.onclick=()=>{cat=+b.dataset.c;nivel='filas';fila=0;render();Sonido.efecto('ok')}});
   const c=$('#opCuerpo'),seg=(lista,act,attr)=>`<div class="op-seg">${lista.map(([k,n])=>`<button data-${attr}="${k}" class="${act===k?'on':''}">${n}</button>`).join('')}</div>`;
@@ -6578,7 +6587,10 @@ function render(){
   $('#opDesc').textContent=desc();
   marcar();pintarIconosDoc();aplicarIdioma();
 }
-function marcar(){const fs=filas();fila=Math.max(0,Math.min(fs.length-1,fila));fs.forEach((f,k)=>f.classList.toggle('foco',nivel==='filas'&&k===fila));if(nivel==='filas'&&fs[fila])fs[fila].scrollIntoView({block:'nearest'})}
+function marcar(){const fs=filas();fila=Math.max(0,Math.min(fs.length-1,fila));fs.forEach((f,k)=>f.classList.toggle('foco',nivel==='filas'&&k===fila));if(nivel==='filas'&&fs[fila])verFila(fs[fila])}
+// desplaza sólo el panel de la derecha (scrollIntoView movía toda la pantalla de Opciones)
+function verFila(f){const p=f.closest('.op-panel');if(!p)return;const pr=p.getBoundingClientRect(),fr=f.getBoundingClientRect(),m=8;
+  if(fr.top<pr.top+m)p.scrollTop-=pr.top+m-fr.top;else if(fr.bottom>pr.bottom-m)p.scrollTop+=fr.bottom-(pr.bottom-m)}
 function ajustar(dir){const f=filas()[fila];if(!f)return;
   if(f.dataset.fila==='seg'){const bs=[...f.querySelectorAll('.op-seg button')],k=bs.findIndex(b=>b.classList.contains('on')),n=Math.max(0,Math.min(bs.length-1,k+dir));if(n!==k){bs[n].click();Sonido.efecto('nav')}}
   else if(f.dataset.fila==='rango'){const r=f.querySelector('input');r.value=Math.max(+r.min,Math.min(+r.max,+r.value+dir*(+r.step)));r.oninput();Sonido.efecto('nav')}}
