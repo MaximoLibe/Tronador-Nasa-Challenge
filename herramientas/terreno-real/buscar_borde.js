@@ -1,6 +1,6 @@
-// Busca en el modelo de Coprates un lugar sobre el borde del cañón:
-// zona de 600 m transitable (poca pendiente) con una caída grande a pocos cientos de metros.
-// Uso: node buscar_borde.js   (necesita coprates.tif en esta carpeta)
+// Searches the Coprates model for a spot on the edge of the canyon:
+// a drivable 600 m area (gentle slope) with a big drop a few hundred metres away.
+// Usage: node buscar_borde.js   (needs coprates.tif in this folder)
 const fs=require('fs'),path=require('path');
 const b=fs.readFileSync(path.join(__dirname,'coprates.tif')),u16=o=>b.readUInt16LE(o),u32=o=>b.readUInt32LE(o);
 const ifd=u32(4),n=u16(ifd),tag={};for(let i=0;i<n;i++){const e=ifd+2+i*12;tag[u16(e)]={c:u32(e+4),v:u32(e+8)}}
@@ -21,16 +21,16 @@ function tile(t){if(cache.has(t))return cache.get(t);const raw=lzw(b.subarray(of
   cache.set(t,f);return f}
 const px=(c,r)=>{if(c<0||r<0||c>=W||r>=H)return NaN;const v=tile(Math.floor(r/TH)*TX+Math.floor(c/TW))[(r%TH)*TW+(c%TW)];return v>-30000&&v<30000?v:NaN};
 const R=3396190,D=Math.PI/180,X0=-3962412,Y0=-720444,S=24;
-const res=[],RZ=12; // radio de la zona en píxeles (≈ 300 m)
+const res=[],RZ=12; // area radius in pixels (≈ 300 m)
 for(let r=40;r<H-40;r+=10)for(let c=40;c<W-40;c+=10){
   const h0=px(c,r);if(isNaN(h0))continue;
-  // pendiente media dentro de la zona de 600 m
+  // mean slope inside the 600 m area
   let ps=0,k=0,ok=true;for(let dy=-RZ;dy<=RZ;dy+=3)for(let dx=-RZ;dx<=RZ;dx+=3){const a=px(c+dx+1,r+dy),bb=px(c+dx-1,r+dy),e=px(c+dx,r+dy+1),f=px(c+dx,r+dy-1);if([a,bb,e,f].some(isNaN)){ok=false;break}ps+=Math.atan(Math.hypot((a-bb)/48,(e-f)/48))/D;k++}
   if(!ok)continue;const pend=ps/k;if(pend>6)continue;
-  // caída: lo más bajo a menos de 1,2 km del centro, en cualquier dirección
+  // drop: the lowest point within 1.2 km of the centre, in any direction
   let bajo=1e9,dir=0;for(let a=0;a<16;a++){const ang=a/16*Math.PI*2;for(let d=15;d<=50;d+=5){const v=px(Math.round(c+Math.cos(ang)*d),Math.round(r+Math.sin(ang)*d));if(v<bajo){bajo=v;dir=ang}}}
   let valido=true;for(let a=0;a<16&&valido;a++)for(let d=5;d<=60;d+=5)if(isNaN(px(Math.round(c+Math.cos(a/8*Math.PI)*d),Math.round(r+Math.sin(a/8*Math.PI)*d)))){valido=false;break}
   const caida=h0-bajo;if(valido&&caida>400&&caida<2500)res.push({lat:(Y0-r*S)/R/D,lon:(X0+c*S)/R/D,pend,caida,dir})}
 res.sort((p,q)=>q.caida-p.caida);
-console.log('candidatos',res.length);
+console.log('candidates',res.length);
 res.slice(0,12).forEach(x=>console.log(`lat ${x.lat.toFixed(4)} lon ${x.lon.toFixed(4)} · pendiente ${x.pend.toFixed(1)}° · caída ${x.caida.toFixed(0)} m a menos de 1,2 km hacia ${['E','SE','S','SO','O','NO','N','NE'][Math.round(x.dir/(Math.PI/4))%8]}`));

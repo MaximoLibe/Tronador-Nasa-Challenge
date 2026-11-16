@@ -4,7 +4,7 @@ A 3D Mars habitat management simulator for kids aged 7 to 12, made by Team **Tro
 
 The player builds a base out of **hemispherical** and **half-cylinder** domes joined together, and has to balance energy, oxygen, water, food, sanity and radiation protection. No decision is free: every machine uses energy, and there is never enough energy for everything.
 
-The game is available in **Spanish, English and Italian** (Options › Game › Language).
+The game starts in **English** and is also available in **Spanish and Italian** (Options › Game › Language).
 
 ## How to play
 
@@ -44,6 +44,12 @@ One sol (Martian day) lasts 10 minutes of play at ×1 speed. When each mission f
 
 ## Latest changes
 
+- **English by default** for new players.
+- **Cable repairs:** every outdoor structure (solar panels, KRUSTY, methane tanks, power distributor, R-SOFC, floodlights, antenna, drill, gas tanks and plastics settler) shows «Replace cut cable» when a storm cuts its cable, and the wiring minigame fixes it.
+- **Airlock stairs:** three metal steps with yellow-and-black safety edges, yellow handrails and a green beacon mark the base entrance.
+- **Clear doorways:** no handrails, windows, furniture or old decorative panels cross any door, and doors show detail on both sides.
+- **Indoor screens:** each outdoor camera picks a spot on the wall with a clear view.
+- **Crew:** activities in first person use an over-the-shoulder camera, and crew members never overlap.
 - **Full translation** into English and Italian: How to play, Learn, panels, notices, notifications, minigames, tutorial and Explore.
 - **To scale:** a smaller survival rover with its own design, sized to stand next to the astronauts, and slightly shorter people so they fit through the doors.
 - **First person:** module walls never turn see-through; from outside you see the whole shell, from inside the inner walls.
@@ -161,4 +167,4 @@ Values added for the game (not from the PDF): 0.84 kg of O₂ and 4 L of net wat
 
 ## VR viewer (in progress)
 
-The tools for viewing the game on a phone in a Cardboard-style viewer over USB are in [herramientas/vr/](herramientas/vr/) (instructions in Spanish in `LEEME.md`). The in-game VR mode is currently disabled and shown as «Coming soon».
+The tools for viewing the game on a phone in a Cardboard-style viewer over USB are in [herramientas/vr/](herramientas/vr/) (see its README). The in-game VR mode is currently disabled and shown as «Coming soon».

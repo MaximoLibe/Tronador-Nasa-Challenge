@@ -1,7 +1,7 @@
-// Valles Marineris / Coprates Chasma: CTX DEM 13S293E de Mars Trek (GeoTIFF en mosaicos de 256 px,
-// compresión LZW y predictor de punto flotante). Uso:
-//   node coprates.js vista              → mapa de todo el modelo para elegir el lugar
-//   node coprates.js recorte <lat> <lon> → grilla de 3 km alrededor de ese punto
+// Valles Marineris / Coprates Chasma: CTX DEM 13S293E from Mars Trek (GeoTIFF in 256 px tiles,
+// LZW compression and floating-point predictor). Usage:
+//   node coprates.js vista              → map of the whole model to pick the place
+//   node coprates.js recorte <lat> <lon> → 3 km grid around that point
 const fs=require('fs'),path=require('path');
 const b=fs.readFileSync(path.join(__dirname,'coprates.tif'));
 const u16=o=>b.readUInt16LE(o),u32=o=>b.readUInt32LE(o);
@@ -9,7 +9,7 @@ const ifd=u32(4),n=u16(ifd),tag={};for(let i=0;i<n;i++){const e=ifd+2+i*12;tag[u
 const W=tag[256].v,H=tag[257].v,TW=tag[322].v,TH=tag[323].v,offs=[],cnts=[];
 for(let i=0;i<tag[324].c;i++){offs.push(u32(tag[324].v+i*4));cnts.push(u32(tag[325].v+i*4))}
 const TX=Math.ceil(W/TW);
-// Decodificador LZW de TIFF (códigos MSB primero, de 9 a 12 bits)
+// TIFF LZW decoder (MSB-first codes, 9 to 12 bits)
 function lzw(src,largo){
   const out=new Uint8Array(largo);let op=0,bit=0;const dic=[];let ancho=9,prev=null;
   const reset=()=>{dic.length=258;for(let i=0;i<256;i++)dic[i]=[i];ancho=9;prev=null};reset();
@@ -36,12 +36,12 @@ if(modo==='vista'){
   let mn=1e9,mx=-1e9;const g=[];for(let r=0;r<H;r+=110){const fila=[];for(let c=0;c<W;c+=45){const v=px(c,r);fila.push(v);if(!isNaN(v)){mn=Math.min(mn,v);mx=Math.max(mx,v)}}g.push(fila)}
   console.log(W,'x',H,'elev',mn.toFixed(0),mx.toFixed(0));
   g.forEach((f,k)=>{const[lon,lat]=deLonLat(0,k*110);console.log(lat.toFixed(2).padStart(7),f.map(v=>isNaN(v)?' ':pasos[Math.min(9,Math.floor((v-mn)/(mx-mn)*10))]).join(''))});
-  const[l0]=deLonLat(0,0),[l1]=deLonLat(W,0);console.log('lon de',l0.toFixed(2),'a',l1.toFixed(2));
+  const[l0]=deLonLat(0,0),[l1]=deLonLat(W,0);console.log('lon from',l0.toFixed(2),'a',l1.toFixed(2));
 }else{
   const lat=+process.argv[3],lon=+process.argv[4],[cc,cr]=aPix(lat,lon),N=151,L=3000,o=new Float32Array(N*N);let mn=1e9,mx=-1e9,nan=0;
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const c=cc+(i/(N-1)-.5)*L/S,r=cr+(j/(N-1)-.5)*L/S,c0=Math.floor(c),r0=Math.floor(r),fx=c-c0,fy=r-r0;
     const v=px(c0,r0)*(1-fx)*(1-fy)+px(c0+1,r0)*fx*(1-fy)+px(c0,r0+1)*(1-fx)*fy+px(c0+1,r0+1)*fx*fy;o[j*N+i]=v;if(isNaN(v))nan++;else{mn=Math.min(mn,v);mx=Math.max(mx,v)}}
-  console.log('mín',mn.toFixed(1),'máx',mx.toFixed(1),'sin dato',nan);
+  console.log('min',mn.toFixed(1),'max',mx.toFixed(1),'no data',nan);
   fs.writeFileSync(path.join(__dirname,'coprates.f32'),Buffer.from(o.buffer));
   let s='';for(let j=0;j<N;j+=8){for(let i=0;i<N;i+=4){const v=o[j*N+i];s+=isNaN(v)?'?':pasos[Math.min(9,Math.floor((v-mn)/(mx-mn+1e-6)*10))]}s+='\n'}console.log(s);
 }
