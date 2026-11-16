@@ -1,16 +1,16 @@
-// Integra el terreno real en expedicion.html
+// Integrates the real terrain into expedicion.html
 const fs=require('fs'),path=require('path');
 const F=process.argv[2];let h=fs.readFileSync(F,'utf8');
 const datos=fs.readFileSync(path.join(__dirname,'terreno_real.json'),'utf8');
 const rep=(a,b)=>{if(!h.includes(a))throw new Error('no encontrado: '+a.slice(0,80));h=h.split(a).join(b)};
 const entre=(ini,fin,nuevo)=>{const a=h.indexOf(ini),b=h.indexOf(fin,a);if(a<0||b<0)throw new Error('bloque no encontrado: '+ini.slice(0,50));h=h.slice(0,a)+nuevo+h.slice(b)};
 
-// 1) Datos de elevación embebidos (JSON) antes del módulo principal
+// 1) Embedded elevation data (JSON) before the main module
 rep('<script type="importmap">',`<!-- Elevación real de los tres lugares (NASA Mars Trek y HiRISE PDS), preparada en grillas comprimidas -->
 <script type="application/json" id="terreno-real">${datos}</script>
 <script type="importmap">`);
 
-// 2) Alturas reales en lugar de las fórmulas inventadas
+// 2) Real heights instead of made-up formulas
 entre('function hJezero(x, z) {','function cJezero(',`/* ================= Terreno real =================
    Elevación medida por orbitadores de la NASA, no inventada:
    · Jezero: modelo CTX de 20 m/píxel (NASA Mars Trek), centrado en el aterrizaje de Perseverance.
@@ -24,7 +24,7 @@ function grillaReal(g) {
   for (let k = 0; k < n * n; k++) { let q = bin.charCodeAt(2 * k) | (bin.charCodeAt(2 * k + 1) << 8); if (q > 32767) q -= 65536; a[k] = (q + 32500) * g.esc + g.min; }
   return { n, lado: g.lado, a };
 }
-// Interpolación cúbica (Catmull-Rom) para que el relieve se vea suave y no facetado
+// Cubic (Catmull-Rom) interpolation so the terrain looks smooth, not faceted
 function cubica(p0, p1, p2, p3, t) { return p1 + 0.5 * t * (p2 - p0 + t * (2 * p0 - 5 * p1 + 4 * p2 - p3 + t * (3 * (p1 - p2) + p3 - p0))); }
 function leerGrilla(g, x, z) {
   const u = (x / g.lado + 0.5) * (g.n - 1), v = (z / g.lado + 0.5) * (g.n - 1);
@@ -37,10 +37,10 @@ function alturaReal(id, rugosidad) {
   const gs = TERRENO[id].grillas.map(grillaReal).sort((p, q) => p.lado - q.lado);
   return (x, z) => {
     let h = null;
-    for (let k = gs.length - 1; k >= 0; k--) {             // de la más gruesa a la más fina
+    for (let k = gs.length - 1; k >= 0; k--) {             // from the coarsest to the finest
       const g = gs[k], d = Math.max(Math.abs(x), Math.abs(z)) / (g.lado / 2);
       if (d >= 1) continue;
-      const v = leerGrilla(g, x, z), w = h === null ? 1 : smooth(1, 0.85, d); // borde suave entre grillas
+      const v = leerGrilla(g, x, z), w = h === null ? 1 : smooth(1, 0.85, d); // soft edge between grids
       h = h === null ? v : mix(h, v, w);
     }
     if (h === null) h = leerGrilla(gs[gs.length - 1], clamp(x, -gs[gs.length - 1].lado / 2, gs[gs.length - 1].lado / 2), clamp(z, -gs[gs.length - 1].lado / 2, gs[gs.length - 1].lado / 2));
@@ -49,12 +49,12 @@ function alturaReal(id, rugosidad) {
 }
 const hJezero = alturaReal('jezero', 0.6), hGale = alturaReal('gale', 0.25), hVM = alturaReal('valles', 0.7);
 `);
-// el color de Gale ya no dibuja dunas inventadas
+// Gale's colouring no longer draws made-up dunes
 entre('function galeDune(x, z) {','function cGale(','');
 rep(`  const dm = galeDune(x, z)[0]; r = mix(r, 0.27, dm); g = mix(g, 0.23, dm); b = mix(b, 0.21, dm);\n`,'');
 entre('const vmEdge = (x) =>','function cVM(','');
 
-// 3) Lugares: coordenadas reales, objetivos ubicados en el terreno real y textos corregidos
+// 3) Places: real coordinates, targets placed on the real terrain and corrected texts
 rep(`id: 'jezero', name: 'Cráter Jezero', lat: 18.4, lon: 77.5,`,`id: 'jezero', name: 'Cráter Jezero', lat: 18.4447, lon: 77.4508,`);
 rep(`start: { x: 40, z: 0, yaw: -Math.PI / 2 }, fog: 0.0011,`,`start: { x: 20, z: 30, yaw: -Math.PI / 2 }, fog: 0.00022,`);
 entre(`      { name: 'Kodiak', x: -150, z: -165, instr: 'Mastcam-Z',`,`    ],\n  },\n  {\n    id: 'gale'`,`      { name: 'Mirador del delta', x: -190, z: -170, instr: 'Mastcam-Z',
@@ -81,7 +81,7 @@ entre(`      { name: 'Borde del cañón', x: 10, z: null, edge: -12, instr: 'Mas
       { name: 'Mirador de las vetas oscuras', x: 190, z: 90, instr: 'SuperCam',
         text: 'En las paredes de Coprates Chasma aparecen vetas oscuras que crecen en la estación cálida y se desvanecen después (se llaman RSL). Al principio se pensó que podían ser agua salada; estudios más recientes apuntan a flujos de arena y polvo seco. La cámara telescópica de SuperCam permite ver detalles desde lejos.' },
 `);
-// fotos aéreas de los objetivos nuevos
+// aerial photos of the new targets
 rep(`  'Kodiak': `,`  'Mirador del delta': 'Con altura se ve el frente del delta subiendo hacia el noroeste. Ingenuity hacía justamente esto para Perseverance: fotos aéreas que ayudaron a elegir la ruta para subir al delta de Jezero y a decidir qué rocas valía la pena visitar.',
   'Rocas de Máaz': 'Desde arriba se ven las rocas del piso del cráter, oscuras y quebradas, y las huellas del rover entre ellas. Así las veía Ingenuity cuando volaba por delante de Perseverance.',
   'Kodiak': `);
@@ -92,7 +92,7 @@ rep(`  'Borde del cañón': `,`  'Pie de la pared sur': 'Desde el aire se ve la 
   'Fractura del fondo': 'Desde arriba las fracturas se ven como líneas rectas, mucho más fáciles de reconocer que desde el suelo. Así se identifican las fallas en las imágenes tomadas desde órbita.',
   'Borde del cañón': `);
 rep(`SITES.forEach(s => s.pois.forEach(p => { if (p.z === null) p.z = vmEdge(p.x) + p.edge; p.done = false;`,`SITES.forEach(s => s.pois.forEach(p => { p.done = false;`);
-// 4) Punto de partida: el lugar más plano cerca del inicio indicado
+// 4) Starting point: the flattest spot near the given start
 rep(`SITES.forEach(s => s.pois.forEach(p => { p.done = false;`,`function inicioPlano(s) {
   let mejor = null, pm = 1e9;
   for (let k = 0; k < 160; k++) { const a = k * 2.399, d = 6 * Math.sqrt(k), x = s.start.x + Math.cos(a) * d, z = s.start.z + Math.sin(a) * d;
@@ -102,9 +102,9 @@ rep(`SITES.forEach(s => s.pois.forEach(p => { p.done = false;`,`function inicioP
 }
 SITES.forEach(inicioPlano);
 SITES.forEach(s => s.pois.forEach(p => { p.done = false;`);
-// 5) Horizonte real de 12 km y cámara que llega a verlo
+// 5) Real 12 km horizon and a camera that can see it
 rep(`heightGeo(site, 3000, 150, true)`,`heightGeo(site, 12000, 220, true)`);
 rep(`const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 6000);`,`const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 16000);`);
-// 6) Textos del menú
+// 6) Menu texts
 rep(`El terreno se genera por código inspirado en cada lugar: no es el relieve real.`,`El relieve es el real: viene de modelos de elevación de NASA Mars Trek (cámara CTX) y del archivo HiRISE, con sólo un poco de rugosidad agregada para las piedritas que el satélite no ve.`);
 fs.writeFileSync(F,h);console.log('ok',(h.length/1024).toFixed(0),'KB');

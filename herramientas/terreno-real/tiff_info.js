@@ -1,4 +1,4 @@
-// Lee sólo la cabecera y el primer IFD de un GeoTIFF remoto (con pedidos por rango) y muestra su estructura
+// Reads only the header and first IFD of a remote GeoTIFF (with range requests) and shows its structure
 const https=require('https');
 function rango(url,a,b){return new Promise((ok,mal)=>{https.get(url,{headers:{Range:`bytes=${a}-${b}`}},r=>{if(r.statusCode>=300&&r.statusCode<400&&r.headers.location)return rango(r.headers.location,a,b).then(ok,mal);const c=[];r.on('data',d=>c.push(d));r.on('end',()=>ok({buf:Buffer.concat(c),status:r.statusCode,len:r.headers['content-range']}))}).on('error',mal)})}
 const TAGS={256:'ancho',257:'alto',258:'bits',259:'compresion',262:'fotometrica',273:'stripOffsets',277:'muestras',278:'filasPorStrip',279:'stripBytes',284:'planar',317:'predictor',322:'tileAncho',323:'tileAlto',324:'tileOffsets',325:'tileBytes',339:'formatoMuestra',33550:'escalaPixel',33922:'puntoAtado',34735:'geoClaves',42113:'nodata'};
