@@ -3957,8 +3957,8 @@ function domeModel(type,sh,opt={}){
       for(const sg of[1,-1]){const c=new THREE.CircleGeometry(1.84,40,0,Math.PI);c.rotateY(sg*Math.PI/2);const cap=new THREE.Mesh(c,mc);cap.position.set(sg*2.86,.24,0);fo.add(cap)}}
     // tiras de luz y pasamanos como en el módulo de la puerta de esclusa
     const luzM=new THREE.MeshBasicMaterial({color:0xf2fbff}),rielM=new THREE.MeshStandardMaterial({color:0xcfd3d4,roughness:.3,metalness:.6});
-    if(sh==='esfera'){const t=new THREE.Mesh(new THREE.TorusGeometry(1.5,.025,6,48),luzM);t.rotation.x=Math.PI/2;t.position.y=1.38;fo.add(t);const r=new THREE.Mesh(new THREE.TorusGeometry(1.74,.018,6,48),rielM);r.rotation.x=Math.PI/2;r.position.y=.72;fo.add(r)}
-    else for(const z of[-1,1]){const t=new THREE.Mesh(new THREE.BoxGeometry(5.2,.04,.04),luzM);t.position.set(0,1.62,z*1.05);fo.add(t);const r=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,5.2,8),rielM);r.rotation.z=Math.PI/2;r.position.set(0,.72,z*1.68);fo.add(r)}
+    if(sh==='esfera'){const t=new THREE.Mesh(new THREE.TorusGeometry(1.5,.025,6,48),luzM);t.rotation.x=Math.PI/2;t.position.y=1.38;fo.add(t);const N=24,arc=Math.PI*2/N;for(let k=0;k<N;k++){const gq=new THREE.TorusGeometry(1.74,.018,6,3,arc);gq.rotateZ(k*arc);const r=new THREE.Mesh(gq,rielM);r.rotation.x=Math.PI/2;r.position.y=.72;r.userData.riel=true;fo.add(r)}}
+    else for(const z of[-1,1]){const t=new THREE.Mesh(new THREE.BoxGeometry(5.2,.04,.04),luzM);t.position.set(0,1.62,z*1.05);fo.add(t);for(let i=0;i<10;i++){const r=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.52,8),rielM);r.rotation.z=Math.PI/2;r.position.set(-2.6+.26+i*.52,.72,z*1.68);r.userData.riel=true;fo.add(r)}}
   }
   g.userData.cascoMeshes=[];g.traverse(o=>{if(o.userData.casco)g.userData.cascoMeshes.push(o)});
   return g;
@@ -5710,7 +5710,8 @@ const _vp=new THREE.Vector3();
 function updateInteriores(tt){
   // en primera persona las paredes nunca se transparentan: afuera se ve la cubierta entera y adentro el forro interior
   const cfp=modoCadete==='fp'&&typeof cadete==='function'?cadete():null,adentro=!cfp||!cfp.fuera;
-  for(const m of S.mods){const md=m.obj.userData.model.userData;if(!md.cascos)continue;if(md.__desp!==puertasVer)despejarPuertas(m);
+  let despHecho=enIntro;
+  for(const m of S.mods){const md=m.obj.userData.model.userData;if(!md.cascos)continue;if(!despHecho&&md.__desp!==puertasVer&&!m.obra&&m.obj.scale.y>.99){despejarPuertas(m);despHecho=true}
     _vp.copy(m.obj.position);const d=camera.position.distanceTo(_vp);
     const fpm=modoCadete==='fp',vis=fpm?0:d<17?1:d<27?(27-d)/10:0;m.obj.userData.vis=fpm?(d<30?1:0):vis;m.obj.userData.dist=d;
     for(const mat of md.cascos){const op0=mat.userData.op0??1;const o=op0*(1-.85*vis);if(Math.abs(mat.opacity-o)>.01){mat.opacity=o;mat.depthWrite=o>.95}}
@@ -5958,8 +5959,8 @@ function despejarPuertas(m){
   try{orientarCamara(m)}catch(e){console.warn(e)}
   const ps=PUERTAS.filter(P=>P.m===m);if(!ps.length)return;m.obj.updateMatrixWorld(true);
   const caja=new THREE.Box3(),c=m.obj.position;
-  m.obj.userData.model.traverse(o=>{if(!o.isMesh||o.userData.esPuerta)return;if(md.forro&&(o===md.forro||o.parent===md.forro))return;
-    caja.setFromObject(o);const t=caja.getSize(new THREE.Vector3());if(Math.max(t.x,t.y,t.z)>2.6||t.y<.05&&caja.max.y<PISO+.1)return;
+  m.obj.userData.model.traverse(o=>{if(!o.isMesh||o.userData.esPuerta)return;if(md.forro&&(o===md.forro||o.parent===md.forro)&&!o.userData.riel)return; // los tramos del pasamanos sí se recortan en cada puerta
+    if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();caja.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);const t=caja.getSize(new THREE.Vector3());if(Math.max(t.x,t.y,t.z)>2.6||t.y<.05&&caja.max.y<PISO+.1)return;
     for(const P of ps){const adentro=Math.sign(c.clone().sub(P.pos).dot(P.n))||1,lat=new THREE.Vector3(-P.n.z,0,P.n.x);
       const ctr=caja.getCenter(new THREE.Vector3()).sub(P.pos),u=ctr.dot(P.n)*adentro,l=Math.abs(ctr.dot(lat));
       const mu=Math.abs(t.x*P.n.x)+Math.abs(t.z*P.n.z),ml=Math.abs(t.x*lat.x)+Math.abs(t.z*lat.z);
@@ -5969,7 +5970,7 @@ function despejarPuertas(m){
 const _rcVig=new THREE.Raycaster();
 function orientarCamara(m){
   const md=m.obj.userData.model.userData,V=md.vig;if(!V||!md.ojo)return;
-  const objs=[];scene.traverse(o=>{if(o.isMesh&&o.visible)objs.push(o)});const propio=o=>{while(o){if(o===md.camVig)return true;o=o.parent}return false};
+  const objs=[];const juntar=o=>{if(o.isMesh&&o.visible)objs.push(o);for(const c of o.children){const um=o.userData;if(um&&(c===um.interior||c===um.forro))continue;juntar(c)}};juntar(connRoot);for(const x of S.mods)if(x!==m&&x.obj.position.distanceTo(m.obj.position)<9)juntar(x.obj);const propio=o=>{while(o){if(o===md.camVig)return true;o=o.parent}return false};
   const cam=new THREE.PerspectiveCamera(70,16/9,.1,10);let mejor=null;
   for(const[a,x0]of V.cand){V.ubicar(a,x0);m.obj.updateMatrixWorld(true);md.ojo.getWorldPosition(cam.position);md.ojo.getWorldQuaternion(cam.quaternion);cam.rotateY(Math.PI);cam.updateMatrixWorld(true);
     let pts=0;for(const[x,y]of[[0,0],[-.7,0],[.7,0],[0,.5],[-.5,-.5],[.5,-.5]]){_rcVig.setFromCamera(new THREE.Vector2(x,y),cam);_rcVig.far=4;const h=_rcVig.intersectObjects(objs,false).find(h=>!propio(h.object));pts+=h?h.distance:4}
