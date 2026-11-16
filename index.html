@@ -2706,8 +2706,8 @@ function puerta(o){
   // hojas corredizas con franjas de seguridad y mirilla
   const hojas=[];
   for(const s of[-1,1]){const h=G(g,0,0,0);const w=W/2-.01;
-    add(h,Bx(w,H-.04,.035),M.hoja,s*w/2,H/2,0);add(h,Bx(.03,H-.1,.04),M.franja,s*.03,H/2,.005);
-    add(h,Bx(w*.6,.16,.04),M.vidrio,s*w*.5,H*.66,.005);for(let k=0;k<3;k++)add(h,Bx(w*.7,.012,.04),M.oscuro,s*w*.5,H*.25+k*.05,.006);hojas.push({h,s,w})}
+    add(h,Bx(w,H-.04,.035),M.hoja,s*w/2,H/2,0);add(h,Bx(.03,H-.1,.045),M.franja,s*.03,H/2,0);
+    add(h,Bx(w*.6,.16,.045),M.vidrio,s*w*.5,H*.66,0);for(let k=0;k<3;k++)add(h,Bx(w*.7,.012,.046),M.oscuro,s*w*.5,H*.25+k*.05,0);/* detalles a los dos lados de la hoja */hojas.push({h,s,w})}
   // luces de estado y botonera
   const luz=add(g,Bx(.08,.025,.02),M.luzR,0,H+.04,.05);
   add(g,Bx(.07,.12,.03),M.oscuro,W/2+.09,H*.55,.04);add(g,Cy(.015,.02,8).rotateX(Math.PI/2),M.luzV,W/2+.09,H*.58,.06);
@@ -3940,7 +3940,7 @@ function domeModel(type,sh,opt={}){
     if(!opt.shield)for(let k=0;k<6;k++){const tt=mesh(new THREE.TorusGeometry(1.93,.045,6,32,Math.PI),metD);tt.rotation.y=Math.PI/2;tt.position.set(-L/2+.05+k*(L-.1)/5,.24,0);g.add(tt)}
     for(const z of[-1.95,1.95]){const b=mesh(new THREE.BoxGeometry(5.9,.14,.1),accD);b.position.set(0,.52,z);g.add(b)}
     for(let k=0;k<4;k++)for(const z of[-1,1]){const w=mesh(new THREE.BoxGeometry(.6,.22,.05),win,false);w.position.set(-2.1+k*1.4,1.15,z*1.53);w.rotation.x=z*.62;w.userData.casco=true;g.add(w)}
-    const door=mesh(new THREE.BoxGeometry(.06,1.1,.8),M.dark);door.position.set(L/2+.02,.8,0);g.add(door);
+
     if(type==='comms')addDish(g,1.6,2.1,0);
     if(type==='moxie'){const s=mesh(new THREE.CylinderGeometry(.12,.12,.9,12),M.metal);s.position.set(1.6,2.3,.2);g.add(s);animarMoxie(g,1.6,2.75,.2)}
   }
@@ -3978,8 +3978,8 @@ function ponerCamaraYPantalla(g,type,sh,fantasma,regolito){
   const rExt=esf?Math.sqrt(1.9*1.9-(Y-.24)**2):Math.sqrt(1.9*1.9-(Y-.24)**2),px=esf?0:-1.2;
   const cam=camaraTpl.clone();cam.scale.setScalar(.11);
   // la placa de pared del modelo mira a +z: se orienta hacia afuera
-  const rx=rExt+(regolito?.12:.02);cam.position.set(px+dx*rx,Y,dz*rx);cam.lookAt(px+dx*10,Y,dz*10);cam.translateZ(.27);g.add(cam);
-  const ojo=new THREE.Object3D();ojo.position.set(px+dx*(rExt+.5),Y+.05,dz*(rExt+.5));ojo.lookAt(px+dx*20,Y-1.2,dz*20);g.add(ojo);g.userData.ojo=ojo;
+  const rx=rExt+(regolito?.12:.02);cam.position.set(px+dx*rx,Y,dz*rx);cam.lookAt(px+dx*10,Y,dz*10);cam.translateZ(.27);g.add(cam);g.userData.camVig=cam;
+  const ojo=new THREE.Object3D();ojo.position.set(px+dx*(rExt+.75),Y+.05,dz*(rExt+.75));ojo.lookAt(px+dx*20,Y-1.2,dz*20);g.add(ojo);g.userData.ojo=ojo;
   if(fantasma)return;
   // pantalla interior a la misma altura, mirando al centro del módulo
   const forma=PANT_FORMAS[Object.keys(DEF).indexOf(type)%PANT_FORMAS.length],ri=rExt-.14;
@@ -5014,7 +5014,8 @@ function updatePantallas(){
   const m=cand[feedTurno++%cand.length],ojo=m.obj.userData.model.userData.ojo;if(!ojo)return;const F=feedDe(m);
   ojo.updateMatrixWorld(true);ojo.getWorldPosition(feedCam.position);ojo.getWorldQuaternion(feedCam.quaternion);feedCam.rotateY(Math.PI);
   const au=renderer.shadowMap.autoUpdate;renderer.shadowMap.autoUpdate=false;selRing.visible=false;const pjv=PJ.map(P=>P.g.visible);
-  renderer.setRenderTarget(F.rt);renderer.render(scene,feedCam);renderer.setRenderTarget(null);renderer.shadowMap.autoUpdate=au;F.listo=true;
+  const cv=m.obj.userData.model.userData.camVig,cvv=cv&&cv.visible;if(cv)cv.visible=false;
+  renderer.setRenderTarget(F.rt);renderer.render(scene,feedCam);renderer.setRenderTarget(null);if(cv)cv.visible=cvv;renderer.shadowMap.autoUpdate=au;F.listo=true;
 }
 
 // fantasma
@@ -5762,7 +5763,8 @@ function loop(now){
     else if(protTool==='shield'){hint.hidden=false;hint.textContent='Blindaje: '+elegir}
     else if(tool||moverM){hint.hidden=false;if(ghostRes&&!ghostRes.ok)hint.textContent=ghostRes.why;else hint.innerHTML=rotTxt.replace(usandoMando?'LB / RB':Ajustes.nombreTecla(Ajustes.tecla('rotar')),m=>'<kbd>'+m+'</kbd>')}
     else if(modoCadete!=='auto'){hint.hidden=false;const m=cercanaAlCadete();
-      hint.innerHTML=(modoCadete==='fp'?'Primera persona':'Cadete manual')+' · '+(usandoMando?'Stick izq. moverse · Stick der. '+(modoCadete==='fp'?'mirar':'girar'):modoCadete==='fp'?'<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> moverse · arrastrá para mirar':'<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> moverse')+(m?' · '+(usandoMando?'<kbd>A</kbd>':'<kbd>F</kbd>')+' '+nom(m.type):'')+' · '+(usandoMando?'botón del cadete':'<kbd>C</kbd>')+' cambiar vista'}
+      const W4='<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ',mv=L3(['moverse','move','muoversi']);
+      hint.innerHTML=(modoCadete==='fp'?L3(['Primera persona','First person','Prima persona']):L3(['Cadete manual','Manual cadet','Cadetto manuale']))+' · '+(usandoMando?L3(['Stick izq.','Left stick','Stick sin.'])+' '+mv+' · '+L3(['Stick der.','Right stick','Stick des.'])+' '+(modoCadete==='fp'?L3(['mirar','look','guardare']):L3(['girar','turn','ruotare'])):modoCadete==='fp'?W4+mv+' · '+L3(['arrastrá para mirar','drag to look','trascina per guardare']):W4+mv)+(m?' · '+(usandoMando?'<kbd>A</kbd>':'<kbd>F</kbd>')+' '+nom(m.type):'')+' · '+(usandoMando?L3(['botón del cadete','cadet button','pulsante del cadetto']):'<kbd>C</kbd>')+' '+L3(['cambiar vista','switch view','cambia visuale'])}
     else hint.hidden=true}
   if(modoConstruccion&&hayTormenta()){setModoConstruccion(false);avisoNoConstruir()}
   slowT+=dt;if(slowT>1){slowT=0;if(!enIntro){checkMissions();pilaresAutomaticos();if(corazonAbierto)renderCorazon();$('#goalsBtn').classList.toggle('urgente',!!urgenteActual())}if(sel&&!demolishArm)renderInfo();if(panelTipo)renderPanelDer();marcarFoco()}
@@ -5871,6 +5873,29 @@ function caminoEntre(a,b){
     pts.push(...rutaDentro(p.de,ba).reverse().slice(1));pts.push(...rutaDentro(p.a,bb))}
   return pts.map(p=>({p}));
 }
+/* ---------- Escalera de la esclusa: marca por dónde se entra a la base ----------
+   Tres escalones de metal con borde de seguridad amarillo y negro, pasamanos amarillos a los costados
+   y una baliza verde arriba de la puerta. Va afuera, pegada a la cubierta, del lado de la puerta exterior. */
+const escMat={};
+function escaleraEsclusa(pu){
+  if(!escMat.metal){escMat.metal=new THREE.MeshStandardMaterial({color:0x9aa1a8,roughness:.45,metalness:.7});
+    const cv=document.createElement('canvas');cv.width=64;cv.height=8;const g=cv.getContext('2d');for(let i=0;i<8;i++){g.fillStyle=i%2?'#1b1b1b':'#f2c232';g.beginPath();g.moveTo(i*8,8);g.lineTo(i*8+8,0);g.lineTo(i*8+16,0);g.lineTo(i*8+8,8);g.fill()}
+    const tx=new THREE.CanvasTexture(cv);tx.wrapS=THREE.RepeatWrapping;tx.repeat.set(2,1);escMat.franja=new THREE.MeshStandardMaterial({map:tx,roughness:.6});
+    escMat.riel=new THREE.MeshStandardMaterial({color:0xf2c232,roughness:.4,metalness:.3});
+    escMat.luz=new THREE.MeshStandardMaterial({color:0x103018,emissive:0x35ff7a,emissiveIntensity:1.6})}
+  const g=new THREE.Group(),v=pu.v,base=pu.half+.02,ANCHO=.9,PROF=.24,N=3,ALTO=PISO;
+  g.position.copy(pu.c);g.rotation.y=Math.atan2(v.x,v.z);connRoot.add(g);
+  const caja=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;g.add(m);return m};
+  // descanso pegado a la cubierta y escalones bajando hacia afuera (en el grupo, +z es hacia afuera)
+  caja(ANCHO,ALTO,.3,escMat.metal,0,ALTO/2,base-.1);
+  for(let k=0;k<N;k++){const h=ALTO*(N-k)/(N+1),z=base+.05+PROF*(k+.5);caja(ANCHO,h,PROF,escMat.metal,0,h/2,z);caja(ANCHO,.012,.05,escMat.franja,0,h+.006,z+PROF/2-.03)}
+  // pasamanos a los dos costados
+  const z0=base-.15,z1=base+.05+PROF*N,y0=ALTO+.9,y1=.9;
+  for(const sx of[-1,1]){const x=sx*(ANCHO/2+.03);caja(.04,y0,.04,escMat.riel,x,y0/2,z0);caja(.04,y1,.04,escMat.riel,x,y1/2,z1);
+    const L=Math.hypot(z1-z0,y0-y1),r=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,L,8),escMat.riel);r.position.set(x,(y0+y1)/2,(z0+z1)/2);r.rotation.x=Math.atan2(z1-z0,y0-y1);r.castShadow=true;g.add(r)}
+  // baliza verde arriba de la entrada
+  const yL=pu.curva?1.25:1.75,zL=pu.curva?Math.sqrt(1.9*1.9-(yL-.24)**2)+.04:base-.12;caja(.22,.06,.06,escMat.luz,0,yL,zL);
+}
 /* ---------- Esclusa: puerta exterior, cámara de despresurización, puerta interior y vestuario ---------- */
 let ESC=null; // geometría y estado de la esclusa activa
 function puertaEsclusa(){
@@ -5934,6 +5959,7 @@ function armarPuertas(){
   const eje=Math.abs(pu.v.x)>.5?'x':'z';
   const ext=pon(pu.pExt,eje,'ext'),int=pon(pu.pInt,eje,'int');
   ESC={pu,ext,int,estado:'pres',t:0,aviso:''};
+  escaleraEsclusa(pu);
   // tabique con hueco de puerta entre la cámara y el vestuario
   const m7=window.Modelos7,tex=m7.texPared().clone();tex.needsUpdate=true;tex.repeat.set(1.2,1);const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.75,side:THREE.DoubleSide});
   const tabique=(s)=>{const sh=new THREE.Shape();let W,H;
@@ -6005,7 +6031,7 @@ function elegirDestino(P){
   const esc=!!ESC&&!hayTormenta(),ext=S.mods.filter(m=>DEF[m.type].kind==='ext'&&m!==moverM&&m.obj.visible!==false);
   if(noche){const dorm=ds.filter(m=>m.type==='dormitorio');for(const m of dorm){const n=m.shape==='esfera'?2:4,ls=lugaresDom(m);for(let k=0;k<n;k++){if(!ocupado(m,k))return{m,lugar:ls[k],k,dormir:true}}}}
   if(P.id!=='comandante'){const rot=S.mods.filter(m=>REPARAR(m)&&m!==moverM);if(rot.length&&Math.random()<.75){const m=rot[Math.floor(Math.random()*rot.length)];
-    if(DEF[m.type].kind==='ext'){if(esc)return{ext:m,trabajo:'reparar'}}else{const ls=lugaresDom(m),k=Math.floor(Math.random()*ls.length);return{m,lugar:ls[k],k,trabajo:'reparar'}}}}
+    if(DEF[m.type].kind==='ext'){if(esc)return{ext:m,trabajo:'reparar'}}else{const ls=lugaresDom(m),libres=ls.map((_,i)=>i).filter(i=>!ocupado(m,i));if(libres.length){const k=libres[Math.floor(Math.random()*libres.length)];return{m,lugar:ls[k],k,trabajo:'reparar'}}}}}
   const pAfuera=P.id==='ingeniero'?.4:P.id==='cadete'?.25:.08;
   if(esc&&ext.length&&Math.random()<pAfuera)return{ext:ext[Math.floor(Math.random()*ext.length)]};
   const pref={comandante:['control','comms','investigacion'],ingeniero:['moxie','agua','esclusa','investigacion'],cadete:['granja','cocina','ocio','investigacion','medico']}[P.id]||[];
@@ -6194,7 +6220,7 @@ function moverCadete(C,dx,dz){
 function cadeteManual(dt){
   const C=cadete();if(!C)return false;if(!usandoMando){mandoMov=[0,0];mandoMira=[0,0]}
   if(modoRover){updateRover(dt);return true}
-  if(C.actividad||C.forzado){const k=Math.min(1,dt*5);if(modoCadete==='fp'){const p=C.g.position;camera.position.set(p.x,PISO+.52,p.z);camera.lookAt(p.x+Math.sin(C.yaw),PISO+.55,p.z+Math.cos(C.yaw))}else{camS.tx+=(C.g.position.x-camS.tx)*k;camS.tz+=(C.g.position.z-camS.tz)*k;placeCamera()}return true}
+  if(C.actividad||C.forzado){const k=Math.min(1,dt*5);if(modoCadete==='fp'){const p=C.g.position,sx=Math.sin(C.yaw),sz=Math.cos(C.yaw);camera.position.set(p.x-sx*.75+sz*.18,p.y+1.05,p.z-sz*.75-sx*.18);camera.lookAt(p.x+sx*.5,p.y+.45,p.z+sz*.5)}else{camS.tx+=(C.g.position.x-camS.tx)*k;camS.tz+=(C.g.position.z-camS.tz)*k;placeCamera()}return true}
   const sens=Ajustes.get('sensibilidad');
   let f=0,s=0;if(tiene('arriba')||keys.has('arrowup')||(vrActivo&&vrToque))f+=1;if(tiene('abajo')||keys.has('arrowdown'))f-=1;
   if(modoCadete==='fp'){if(tiene('izquierda'))s-=1;if(tiene('derecha'))s+=1;if(keys.has('arrowleft')||tiene('girarIzq'))C.yaw+=2*dt*sens;if(keys.has('arrowright')||tiene('girarDer'))C.yaw-=2*dt*sens}
@@ -6245,7 +6271,7 @@ function ponerClima(on){S.climaOn=on;
   else{S.climaHoras=18+rnd()*24;programarTormenta();toast('Clima activado: vuelven las ventiscas, los tornados y las tormentas solares.','')}
   pintarClimaBtn();renderStats();renderInfo()}
 Ajustes.alCambiar(()=>{construirStats();renderStats();renderCats();if(panelTipo)renderPanelDer();if(misionVisible)renderMision();renderInfo();if(!$('#pausa').hidden)renderPausa();aplicarCalidad();pintarIconosHud()});
-window.__hab={ver:m=>{sel=m;showEnergy=false;renderInfo()},pasoTut:k=>{tutorial={k,alTerminar:null,prev:1};$('#tutorial').hidden=false;pasoTutorial()},get ESC(){return ESC},get PUERTAS(){return PUERTAS},manejarRover,hacerActividad,get modoRover(){return modoRover},cambiarModalidad,moverCadete,get PJ(){return PJ},setModoCadete,get modoCadete(){return modoCadete},get notifs(){return notifs},abrirNotifs,cerrarNotifs,get tuneles(){return tuneles},get S(){return S},get tutorial(){return tutorial},sigTutorial,finTutorial,abrirMinijuego,get MJ(){return MJ},verDentroGranja,salirGranja,dañosTormenta,camS,saltarIntro,get guia(){return guia},abrirPausa,construirConRobots,addMod:(...a)=>{const m=addMod(...a);rebuildConnectors();return m},cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
+window.__hab={get scene(){return scene},get camera(){return camera},ver:m=>{sel=m;showEnergy=false;renderInfo()},pasoTut:k=>{tutorial={k,alTerminar:null,prev:1};$('#tutorial').hidden=false;pasoTutorial()},get ESC(){return ESC},get PUERTAS(){return PUERTAS},manejarRover,hacerActividad,get modoRover(){return modoRover},cambiarModalidad,moverCadete,get PJ(){return PJ},setModoCadete,get modoCadete(){return modoCadete},get notifs(){return notifs},abrirNotifs,cerrarNotifs,get tuneles(){return tuneles},get S(){return S},get tutorial(){return tutorial},sigTutorial,finTutorial,abrirMinijuego,get MJ(){return MJ},verDentroGranja,salirGranja,dañosTormenta,camS,saltarIntro,get guia(){return guia},abrirPausa,construirConRobots,addMod:(...a)=>{const m=addMod(...a);rebuildConnectors();return m},cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
 requestAnimationFrame(loop);
 }
 </script>
