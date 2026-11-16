@@ -845,7 +845,7 @@ button.tecla{font-size:11px;min-width:44px}
     <ul class="sm-lista" id="sm-menu"></ul>
     <p class="sm-mando" id="sm-mando"></p>
   </nav>
-  <div class="sm-firma"><img id="img-firma" alt="Insignia del equipo Tronador"><span data-i18n="hechoPor">Hecho por el equipo Tronador</span></div>
+  <div class="sm-firma"><span data-i18n="hechoPor">Hecho por el equipo Tronador</span><img id="img-firma" alt="Insignia del equipo Tronador"></div>
   <section class="sm-panel" id="sm-panel" hidden aria-live="polite"></section>
   <!-- Supervivencia: «Elige tu misión» con dos paneles paralelos -->
   <section class="sv" id="sv" hidden aria-label="Elegir misión">
@@ -896,6 +896,7 @@ button.tecla{font-size:11px;min-width:44px}
   <button class="btn" id="goalsBtn"><span data-i18n="objetivos">Objetivos</span><span class="bi-slot" data-bi-acc="mision"></span></button>
   <div id="pestanaConstruccion" data-i18n="modoConstruccion">MODO CONSTRUCCIÓN</div>
   <button class="btn" id="momentoBtn" hidden title="Momento del día (modo libre)">☀ Soleado</button>
+  <button class="btn" id="climaBtn" hidden title="Clima: tormentas activadas o desactivadas (modo libre)">⛈ Clima: activado</button>
   <span class="hud-badge" id="badgeReloj"></span>
 </div>
 <aside id="info" class="hud glass" hidden></aside>
@@ -2836,7 +2837,7 @@ const I18N={
  reanudar:['Reanudar partida','Resume game','Riprendi partita'],salirMenu:['Salir al menú principal','Quit to main menu','Esci al menu principale'],
  pzDesc_reanudar:['Volver a jugar la partida','Go back to playing the game','Torna a giocare'],pzDesc_guardar:['Guardar la base en una de las 3 partidas','Save the base in one of the 3 slots','Salva la base in uno dei 3 slot'],
  pzDesc_cargar:['Seguir una partida guardada','Continue a saved game','Continua una partita salvata'],pzDesc_opciones:['Idioma, video, audio y controles','Language, video, audio and controls','Lingua, video, audio e comandi'],
- pzDesc_salir:['Volver al menú de inicio (lo que no guardaste se pierde)','Go back to the start menu (unsaved progress is lost)','Torna al menu iniziale (i progressi non salvati si perdono)'],
+ pzDesc_clima:['Modo libre: activar o desactivar ventiscas, tornados y tormentas solares','Free mode: turn blizzards, tornadoes and solar storms on or off','Modalità libera: attiva o disattiva bufere, tornado e tempeste solari'],pzDesc_salir:['Volver al menú de inicio (lo que no guardaste se pierde)','Go back to the start menu (unsaved progress is lost)','Torna al menu iniziale (i progressi non salvati si perdono)'],
  pzDesc_slot:['Elegí una partida','Choose a slot','Scegli uno slot'],pzDesc_si:['Salir sin guardar','Quit without saving','Esci senza salvare'],pzDesc_no:['Seguir jugando','Keep playing','Continua a giocare'],
  perroHola:['¡Hola, {n}! Soy tu asistente de misión. Te voy a ir dando las tareas para mantener viva la base.','Hi, {n}! I\'m your mission assistant. I\'ll give you the tasks to keep the base alive.','Ciao, {n}! Sono il tuo assistente di missione. Ti darò i compiti per mantenere viva la base.'],
  perroMision:['{n}, tu siguiente misión es {m}.','{n}, your next mission is to {m}.','{n}, la tua prossima missione è {m}.'],perroBien:['¡Bien hecho, {n}!','Well done, {n}!','Ben fatto, {n}!'],
@@ -3112,7 +3113,7 @@ const D=[
 ['Ciencia de la misión','Mission science','Scienza della missione'],['Fuentes','Sources','Fonti'],['Cerrar','Close','Chiudi'],['Salir','Exit','Esci'],['Volver','Back','Indietro'],
 ['Siguiente','Next','Avanti'],['Saltar','Skip','Salta'],['Empezar','Start','Inizia'],['Tutorial','Tutorial','Tutorial'],
 ['Estadísticas en vivo','Live statistics','Statistiche dal vivo'],['Velocidad del tiempo','Time speed','Velocità del tempo'],['×1: 1 sol = 10 min','×1: 1 sol = 10 min','×1: 1 sol = 10 min'],
-['Momento del día (modo libre)','Time of day (free mode)','Momento della giornata (modalità libera)'],['☀ Soleado','☀ Sunny','☀ Soleggiato'],['🌅 Amanecer','🌅 Sunrise','🌅 Alba'],['🌇 Anochecer','🌇 Dusk','🌇 Tramonto'],['🌙 Noche','🌙 Night','🌙 Notte'],
+['⛈ Clima: activado','⛈ Weather: on','⛈ Clima: attivo'],['☀ Clima: desactivado','☀ Weather: off','☀ Clima: disattivato'],['Clima: activado','Weather: on','Clima: attivo'],['Clima: desactivado','Weather: off','Clima: disattivato'],['Ventiscas, tornados y tormentas solares','Blizzards, tornadoes and solar storms','Bufere, tornado e tempeste solari'],['Clima: tormentas activadas o desactivadas (modo libre)','Weather: storms on or off (free mode)','Clima: tempeste attive o disattivate (modalità libera)'],['Clima desactivado: no habrá ventiscas, tornados ni tormentas solares.','Weather off: there will be no blizzards, tornadoes or solar storms.','Clima disattivato: non ci saranno bufere, tornado né tempeste solari.'],['Clima activado: vuelven las ventiscas, los tornados y las tormentas solares.','Weather on: blizzards, tornadoes and solar storms are back.','Clima attivo: tornano bufere, tornado e tempeste solari.'],['Momento del día (modo libre)','Time of day (free mode)','Momento della giornata (modalità libera)'],['☀ Soleado','☀ Sunny','☀ Soleggiato'],['🌅 Amanecer','🌅 Sunrise','🌅 Alba'],['🌇 Anochecer','🌇 Dusk','🌇 Tramonto'],['🌙 Noche','🌙 Night','🌙 Notte'],
 ['Notificaciones','Notifications','Notifiche'],['No hay notificaciones.','No notifications.','Nessuna notifica.'],['Esc · B: salir','Esc · B: exit','Esc · B: esci'],
 ['Modo corazón','Heart mode','Modalità cuore'],['Categorías de construcción','Build categories','Categorie di costruzione'],['Bienestar del astronauta','Astronaut wellbeing','Benessere dell\'astronauta'],['Modo construcción','Build mode','Modalità costruzione'],
 ['Cadete: automático o manual (tecla C) · mantener O / Y: primera o tercera persona','Cadet: automatic or manual (C key) · hold O / Y: first or third person','Cadetto: automatico o manuale (tasto C) · tieni premuto O / Y: prima o terza persona'],
@@ -3750,6 +3751,7 @@ function step(h){
 }
 // Tres climas dinámicos: Templado, Ventisca y Tornado
 function cambiarClima(){
+  if(S.climaOn===false){S.clima='templado';S.climaHoras=24;return}
   const dif=DIFICULTAD[OPC.dificultad],antes=S.clima;
   if(antes!=='templado'){S.clima='templado';S.climaHoras=20+rnd()*24;if(antes==='tornado'){S.limpiezaSolar=24;toast('Clima templado. El tornado barrió el polvo de los paneles: producen 10 % más durante un sol.','good')}else toast('Pasó la ventisca: clima templado. Los paneles y los taladros vuelven a trabajar normal.','good')}
   else if(rnd()<dif.climaExtremo){
@@ -3763,8 +3765,8 @@ function newSol(){
   S.sol++;S.delay=14+10*Math.cos(S.delayPhase+S.sol*.05);
   if(S.spe>0){S.spe--;if(!S.spe)toast('Pasó la tormenta solar. La tripulación ya puede salir del refugio.','good')}
   if(S.speWarn>0){S.speWarn--;if(!S.speWarn){S.spe=2;Sonido.efecto('alerta');toast('¡Tormenta solar! Partículas del Sol llegan a Marte. '+(S.shelter?'La tripulación está en el refugio.':'Activá el Refugio en Protección.'),'rad')}}
-  S.nextSpe--;
-  if(S.nextSpe<=0&&!S.spe&&!S.speWarn){S.speName=DONKI[(rnd()*DONKI.length)|0];
+  if(S.climaOn!==false)S.nextSpe--;
+  if(S.climaOn!==false&&S.nextSpe<=0&&!S.spe&&!S.speWarn){S.speName=DONKI[(rnd()*DONKI.length)|0];
     if(active('comms')){S.speWarn=1;toast('Aviso de la Tierra (tardó '+fmt(S.delay)+' min en llegar): mañana llega una tormenta solar, como la registrada por NASA DONKI el '+S.speName+'.','rad')}
     else{S.spe=2;toast('¡Tormenta solar sin aviso! Sin antena no llegó la alerta. Evento real de referencia: DONKI '+S.speName+'.','rad')}
     S.nextSpe=dif.spe[0]+((rnd()*dif.spe[1])|0)}
@@ -4889,7 +4891,7 @@ function camaraGranja(){
    cables cortados, paneles sucios, antenas desincronizadas y regolito caído de una cúpula. */
 function programarTormenta(){S.tormenta={en:150+Math.random()*180,activa:false,avisada:false,dura:0}}
 function updateTormenta(dt){
-  if(enIntro||S.over)return;if(!S.tormenta)programarTormenta();const T=S.tormenta;const v=dt*(speed||0);if(!v)return;
+  if(enIntro||S.over||S.climaOn===false)return;if(!S.tormenta)programarTormenta();const T=S.tormenta;const v=dt*(speed||0);if(!v)return;
   if(!T.activa){T.en-=v;
     if(!T.avisada&&T.en<=30){T.avisada=true;const a=$('#avisoTormenta');a.hidden=false;Sonido.efecto('alerta');clearTimeout(a._t);a._t=setTimeout(()=>a.hidden=true,5000)}
     if(T.en<=0){T.activa=true;T.dura=45+Math.random()*20;T.clima0=S.clima;S.clima='ventisca';S.climaHoras=99;Sonido.tormenta(true);toast('Ventisca: los paneles se repliegan. Esperá adentro a que pase.','bad')}}
@@ -5587,7 +5589,7 @@ function alternarPausa(){if($('#pausa').hidden)abrirPausa();else cerrarPausa()}
 function abrirPausa(){if(enIntro||S.over||MJ)return;pausaPrev=speed||1;setSpeed(0);$('#juego').classList.add('desenfocado');$('#pausa').hidden=false;pausaVista='menu';pausaFoco=0;renderPausa();Sonido.efecto('ok')}
 function cerrarPausa(){$('#pausa').hidden=true;$('#juego').classList.remove('desenfocado');setSpeed(pausaPrev);Sonido.efecto('atras')}
 function opcionesPausa(){
-  if(pausaVista==='menu')return[['reanudar',t('reanudar')],['guardar',t('guardarPartida')],['cargar',t('cargarPartida')],['opciones',t('opciones')],['vr','Modo VR (celular)',0,'Próximamente',true],['salir',t('salirMenu')]];
+  if(pausaVista==='menu')return[['reanudar',t('reanudar')],['guardar',t('guardarPartida')],['cargar',t('cargarPartida')],['opciones',t('opciones')],['vr','Modo VR (celular)',0,'Próximamente',true],...(OPC.libre?[['clima',S.climaOn===false?'Clima: desactivado':'Clima: activado',0,'Ventiscas, tornados y tormentas solares']]:[]),['salir',t('salirMenu')]];
   if(pausaVista==='guardar'||pausaVista==='cargar')return[1,2,3].map(n=>{const r=Partidas.resumen(n);return['slot',t('ranura')+' '+n+(r?' · Sol '+r.sol:' · '+t('vacia')),n,r?r.fecha+' · '+t(r.dif)+(r.nombre?' · '+r.nombre:'')+(r.libre?' · '+t('modoLibre'):''):'',pausaVista==='cargar'&&!r]});
   return[['si',t('si')],['no',t('no')]];
 }
@@ -5608,7 +5610,8 @@ function accionPausa(a,n){
   if(a==='guardar'||a==='cargar'){pausaVista=a;pausaFoco=0;renderPausa()}
   else if(a==='opciones')Opciones.abrir(()=>renderPausa());
   else if(a==='salir'){pausaVista='salir';pausaFoco=1;renderPausa()}
-  else if(a==='no'){pausaVista='menu';pausaFoco=5;renderPausa()}
+  else if(a==='no'){pausaVista='menu';pausaFoco=opcionesPausa().findIndex(o=>o[0]==='salir');renderPausa()}
+  else if(a==='clima'){ponerClima(S.climaOn===false);renderPausa()}
   else if(a==='vr'){return}
   else if(a==='si'){sessionStorage.setItem('tronador-sin-splash','1');location.reload()}
   else if(a==='slot'&&pausaVista==='guardar'){const ok=Partidas.escribir(n,exportarPartida());toast(ok?t('guardada')+' ('+t('ranura')+' '+n+')':t('sinGuardar'),ok?'good':'bad');renderPausa()}
@@ -6232,7 +6235,15 @@ $('#loading').hidden=true;
 if(OPC.intro&&!OPC.guardada)iniciarIntro();else{setSpeed(1);mostrarGuiaInicio(()=>setTimeout(anunciarMision,600))}
 pintarIconosHud();$('#goalsBtn').classList.toggle('libre',!!OPC.libre);
 {const MOM=[['☀ Soleado',12],['🌅 Amanecer',6.3],['🌇 Anochecer',18.2],['🌙 Noche',0]];let km=0;const b=$('#momentoBtn');b.hidden=!OPC.libre;
- b.onclick=()=>{km=(km+1)%MOM.length;S.hour=MOM[km][1];b.textContent=MOM[km][0];Sonido.efecto('clic');renderStats()}}
+ b.onclick=()=>{km=(km+1)%MOM.length;S.hour=MOM[km][1];b.textContent=MOM[km][0];Sonido.efecto('clic');renderStats()}
+ const cb=$('#climaBtn');cb.hidden=!OPC.libre;pintarClimaBtn();cb.onclick=()=>{ponerClima(S.climaOn===false);Sonido.efecto('clic')}}
+// Modo libre: el jugador elige si hay clima (ventiscas, tornados y tormentas solares) o no
+function pintarClimaBtn(){const cb=$('#climaBtn');if(cb)cb.textContent=S.climaOn===false?'☀ Clima: desactivado':'⛈ Clima: activado'}
+function ponerClima(on){S.climaOn=on;
+  if(!on){const T=S.tormenta;if(T&&T.activa){T.activa=false;Sonido.tormenta(false)}programarTormenta();const a=$('#avisoTormenta');if(a)a.hidden=true;
+    S.clima='templado';S.climaHoras=24;S.spe=0;S.speWarn=0;toast('Clima desactivado: no habrá ventiscas, tornados ni tormentas solares.','good')}
+  else{S.climaHoras=18+rnd()*24;programarTormenta();toast('Clima activado: vuelven las ventiscas, los tornados y las tormentas solares.','')}
+  pintarClimaBtn();renderStats();renderInfo()}
 Ajustes.alCambiar(()=>{construirStats();renderStats();renderCats();if(panelTipo)renderPanelDer();if(misionVisible)renderMision();renderInfo();if(!$('#pausa').hidden)renderPausa();aplicarCalidad();pintarIconosHud()});
 window.__hab={ver:m=>{sel=m;showEnergy=false;renderInfo()},pasoTut:k=>{tutorial={k,alTerminar:null,prev:1};$('#tutorial').hidden=false;pasoTutorial()},get ESC(){return ESC},get PUERTAS(){return PUERTAS},manejarRover,hacerActividad,get modoRover(){return modoRover},cambiarModalidad,moverCadete,get PJ(){return PJ},setModoCadete,get modoCadete(){return modoCadete},get notifs(){return notifs},abrirNotifs,cerrarNotifs,get tuneles(){return tuneles},get S(){return S},get tutorial(){return tutorial},sigTutorial,finTutorial,abrirMinijuego,get MJ(){return MJ},verDentroGranja,salirGranja,dañosTormenta,camS,saltarIntro,get guia(){return guia},abrirPausa,construirConRobots,addMod:(...a)=>{const m=addMod(...a);rebuildConnectors();return m},cellToClient:(x,y)=>{const[wx,wz]=cellToWorld(x,y);const v=new THREE.Vector3(wx,0,wz).project(camera);return[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]}};
 requestAnimationFrame(loop);
