@@ -714,7 +714,8 @@ body.en-intro #hintModalidad,body.en-granja #hintModalidad{display:none}
 #nombreIniciar[disabled]{opacity:.4;cursor:not-allowed}
 /* sin indicador del puente VR; durante la partida no se muestran las teclas/botones de cada cosa (están en Opciones › Controles) */
 #puenteVR .ind{display:none!important}
-#juego .bi-slot,#juego .hud-badge,#hintModalidad{display:none!important}
+body:not(.modo-mando) #juego .bi-slot,body:not(.modo-mando) #juego .hud-badge,body:not(.modo-mando) #hintModalidad{display:none!important}
+.circ .bi-slot .bi.p,.hud-badge .bi.p{background:#15181d!important;color:#fff!important;border:2px solid #f2f2f2!important}
 /* botones A B X Y como los del control de Xbox: círculo negro, aro blanco y letra de color */
 .bi.r{background:radial-gradient(circle at 38% 30%,#3b3b3b,#060606 72%)!important;border:2px solid #f2f2f2!important;box-shadow:0 1px 3px rgba(0,0,0,.55)!important;font-family:Helvetica,Arial,sans-serif;font-weight:900;min-width:20px;height:20px}
 .gc-fila .bi.r,.gc-ok .bi.r{min-width:24px;height:24px;font-size:13px}
@@ -3104,7 +3105,7 @@ const D=[
 ['Cadete: automático o manual (tecla C) · mantener O / Y: primera o tercera persona','Cadet: automatic or manual (C key) · hold O / Y: first or third person','Cadetto: automatico o manuale (tasto C) · tieni premuto O / Y: prima o terza persona'],
 ['Mantén','Hold','Tieni'],['para cambiar de modalidad','to switch view','per cambiare visuale'],['Hábitat','Habitat','Habitat'],
 ['¡Una tormenta se acerca!','A storm is coming!','Sta arrivando una tempesta!'],['Ventisca','Blizzard','Bufera'],['Tornado','Tornado','Tornado'],['Templado','Mild','Mite'],
-['Salir del modo VR','Exit VR mode','Esci dalla modalità VR'],['Temporalmente deshabilitado','Temporarily disabled','Temporaneamente disattivato'],['El modo VR está temporalmente deshabilitado.','VR mode is temporarily disabled.','La modalità VR è temporaneamente disattivata.'],['Modo VR (celular)','VR mode (phone)','Modalità VR (telefono)'],['Durmiendo…','Sleeping…','Dormendo…'],['Pasa la noche marciana','The Martian night goes by','Passa la notte marziana'],
+['Salir del modo VR','Exit VR mode','Esci dalla modalità VR'],['Próximamente','Coming soon','Prossimamente'],['El modo VR llega próximamente.','VR mode is coming soon.','La modalità VR arriva prossimamente.'],['Modo VR (celular)','VR mode (phone)','Modalità VR (telefono)'],['Durmiendo…','Sleeping…','Dormendo…'],['Pasa la noche marciana','The Martian night goes by','Passa la notte marziana'],
 ['Granja hidropónica · vista desde la puerta','Hydroponic farm · view from the door','Serra idroponica · vista dalla porta'],
 ['Primera persona','First person','Prima persona'],['Tercera persona (vista de arriba)','Third person (top view)','Terza persona (vista dall\'alto)'],['Cadete manual','Manual cadet','Cadetto manuale'],
 ['moverse','move','muoversi'],['arrastrá para mirar','drag to look','trascina per guardare'],['cambiar vista','switch view','cambia visuale'],['Stick izq. moverse','Left stick move','Stick sin. muoversi'],['Stick der. mirar','Right stick look','Stick des. guardare'],['Stick der. girar','Right stick turn','Stick des. ruotare'],['botón del cadete','cadet button','pulsante del cadetto'],
@@ -5573,14 +5574,14 @@ function alternarPausa(){if($('#pausa').hidden)abrirPausa();else cerrarPausa()}
 function abrirPausa(){if(enIntro||S.over||MJ)return;pausaPrev=speed||1;setSpeed(0);$('#juego').classList.add('desenfocado');$('#pausa').hidden=false;pausaVista='menu';pausaFoco=0;renderPausa();Sonido.efecto('ok')}
 function cerrarPausa(){$('#pausa').hidden=true;$('#juego').classList.remove('desenfocado');setSpeed(pausaPrev);Sonido.efecto('atras')}
 function opcionesPausa(){
-  if(pausaVista==='menu')return[['reanudar',t('reanudar')],['guardar',t('guardarPartida')],['cargar',t('cargarPartida')],['opciones',t('opciones')],['vr','Modo VR (celular)',0,'Temporalmente deshabilitado',true],['salir',t('salirMenu')]];
+  if(pausaVista==='menu')return[['reanudar',t('reanudar')],['guardar',t('guardarPartida')],['cargar',t('cargarPartida')],['opciones',t('opciones')],['vr','Modo VR (celular)',0,'Próximamente',true],['salir',t('salirMenu')]];
   if(pausaVista==='guardar'||pausaVista==='cargar')return[1,2,3].map(n=>{const r=Partidas.resumen(n);return['slot',t('ranura')+' '+n+(r?' · Sol '+r.sol:' · '+t('vacia')),n,r?r.fecha+' · '+t(r.dif)+(r.nombre?' · '+r.nombre:'')+(r.libre?' · '+t('modoLibre'):''):'',pausaVista==='cargar'&&!r]});
   return[['si',t('si')],['no',t('no')]];
 }
 function renderPausa(){
   const c=$('#pausaCaja'),ops=opcionesPausa();pausaFoco=Math.max(0,Math.min(ops.length-1,pausaFoco));
   const tit=pausaVista==='menu'?t('pausa'):pausaVista==='guardar'?t('guardarPartida'):pausaVista==='cargar'?t('cargarPartida'):t('salirMenu');
-  const da=ops[pausaFoco],desc=pausaVista==='menu'?(da[0]==='vr'?'El modo VR está temporalmente deshabilitado.':t('pzDesc_'+da[0])):pausaVista==='salir'?t('pzDesc_'+da[0]):t('pzDesc_slot');
+  const da=ops[pausaFoco],desc=pausaVista==='menu'?(da[0]==='vr'?'El modo VR llega próximamente.':t('pzDesc_'+da[0])):pausaVista==='salir'?t('pzDesc_'+da[0]):t('pzDesc_slot');
   c.innerHTML=`<h2 class="pz-tit">${tit}</h2>${pausaVista==='salir'?`<p class="pz-confirma">${t('salirSeguro')}</p>`:''}
     <div class="pz-lista">${ops.map(([a,txt,n,sub,dis],k)=>`<button class="pz-op${k===pausaFoco?' on':''}" data-a="${a}" data-k="${k}" ${n?'data-n="'+n+'"':''} ${dis?'disabled':''}>${txt}${sub?'<small>'+sub+'</small>':''}</button>`).join('')}</div>
     <div class="pz-pie"><button class="pz-volver" data-v="1">${usandoMando?Iconos.boton(1):Iconos.tecla('Esc')} ${t('volver')}</button><span class="pz-desc">${desc}</span></div>`;
