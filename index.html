@@ -5679,12 +5679,14 @@ function updateEnv(){
 // Interiores: al acercar la cámara la cubierta se vuelve casi transparente
 const _vp=new THREE.Vector3();
 function updateInteriores(tt){
+  // en primera persona las paredes nunca se transparentan: afuera se ve la cubierta entera y adentro el forro interior
+  const cfp=modoCadete==='fp'&&typeof cadete==='function'?cadete():null,adentro=!cfp||!cfp.fuera;
   for(const m of S.mods){const md=m.obj.userData.model.userData;if(!md.cascos)continue;
     _vp.copy(m.obj.position);const d=camera.position.distanceTo(_vp);
     const fpm=modoCadete==='fp',vis=fpm?0:d<17?1:d<27?(27-d)/10:0;m.obj.userData.vis=fpm?(d<30?1:0):vis;m.obj.userData.dist=d;
     for(const mat of md.cascos){const op0=mat.userData.op0??1;const o=op0*(1-.85*vis);if(Math.abs(mat.opacity-o)>.01){mat.opacity=o;mat.depthWrite=o>.95}}
     // primera persona: la cubierta se esconde y se ve el forro interior (sin regolito ni paisaje)
-    if(md.forro){const f=fpm&&d<30;if(md.forro.visible!==f){md.forro.visible=f;(md.cascoMeshes||[]).forEach(o=>o.visible=!f)}}
+    if(md.forro){const f=fpm&&d<30&&adentro;if(md.forro.visible!==f){md.forro.visible=f;(md.cascoMeshes||[]).forEach(o=>o.visible=!f)}}
     if(md.interior){const ver=fpm?d<30:vis>.01;md.interior.visible=ver;const an=md.interior.userData.anim;if(an&&d<45&&ver)an(tt)}}
   updateTuneles();
 }
