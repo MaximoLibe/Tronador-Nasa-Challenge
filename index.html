@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -2740,7 +2740,7 @@ const TECLAS_DEF={arriba:'w',abajo:'s',izquierda:'a',derecha:'d',girarIzq:'q',gi
 // A = Enter · B = Esc · X = Modo Corazón · Y = Modo Construcción · LB / RB rotan · la cruceta sólo mueve el foco
 const MANDO_DEF={construir:0,cancelar:1,bienestar:2,construccion:3,rotarIzq:4,rotarDer:5,mision:8,pausa:9,mapa:10,radar:11};
 const NOMBRE_BOTON=['A','B','X','Y','LB','RB','LT','RT','Back','Start','L3','R3','↑','↓','←','→','Guide'];
-const base={idioma:'es',musica:.5,efectos:.7,calidad:'alta',sensibilidad:1,guia:true,mandoV:2,teclas:{...TECLAS_DEF},mando:{...MANDO_DEF}};
+const base={idioma:'en',musica:.5,efectos:.7,calidad:'alta',sensibilidad:1,guia:true,mandoV:2,teclas:{...TECLAS_DEF},mando:{...MANDO_DEF}};
 let A=JSON.parse(JSON.stringify(base));
 try{const g=JSON.parse(localStorage.getItem(CLAVE)||'null');if(g){A={...A,...g,teclas:{...TECLAS_DEF,...(g.teclas||{})},mando:g.mandoV===2?{...MANDO_DEF,...(g.mando||{})}:{...MANDO_DEF},mandoV:2}}}catch(_){}
 // PROMPT 7: O y Y pasan a «mantener para cambiar de modalidad» y «barra del reloj»; la misión va a J y el detalle a U
